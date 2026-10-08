@@ -81,26 +81,47 @@ export default function Checkout({
     setIsSubmitting(true);
 
     // Simulate safe order placement / payment
-    setTimeout(() => {
-      const orderId = 'PW-' + Math.floor(100000 + Math.random() * 900000);
-      const placedOrder = {
-        orderId,
-        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-        items: [...cart],
-        customer: { ...formData },
-        total: finalTotal,
-        shipping: shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`,
-        isPaid: true
-      };
+    const orderId = 'PW-' + Math.floor(100000 + Math.random() * 900000);
+    const placedOrder = {
+      orderId,
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+      items: JSON.stringify([...cart]), // Ensure it's stringified for DB TEXT column
+      customer: JSON.stringify({ ...formData }), // Ensure it's stringified for DB TEXT column
+      total: finalTotal.toString(),
+      shipping: shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`,
+      isPaid: true
+    };
 
-      // Save to local storage for track order feature
+    // 1. Send to Java Backend Database
+    try {
+      fetch('http://localhost:8080/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(placedOrder)
+      }).catch(e => console.warn("Backend not reachable yet", e));
+    } catch (dbErr) {
+      console.warn("Could not save to DB", dbErr);
+    }
+
+    // 2. Also save to local storage (for fallback / track order feature)
+    try {
+      let existingOrders = [];
       try {
-        const existingOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
-        existingOrders.unshift(placedOrder);
-        localStorage.setItem('customer_orders', JSON.stringify(existingOrders));
-      } catch (err) {}
+        existingOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
+        if (!Array.isArray(existingOrders)) existingOrders = [];
+      } catch (parseErr) {
+        existingOrders = []; 
+      }
+      // Revert items and customer back to objects for local storage
+      const localOrder = { ...placedOrder, items: [...cart], customer: { ...formData } };
+      existingOrders.unshift(localOrder);
+      localStorage.setItem('customer_orders', JSON.stringify(existingOrders));
+    } catch (err) {
+      console.error("Failed to save order to local storage", err);
+    }
 
-      setOrderComplete(placedOrder);
+    setTimeout(() => {
+      setOrderComplete({ ...placedOrder, items: [...cart], customer: { ...formData } });
       setIsSubmitting(false);
       clearCart();
     }, 1200);

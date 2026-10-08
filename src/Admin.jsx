@@ -12,7 +12,8 @@ import {
   Tag, 
   Check, 
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  Users
 } from 'lucide-react';
 import { 
   getStoredCategories, 
@@ -35,6 +36,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const [activeSubTab, setActiveSubTab] = useState('manage-categories'); // 'create-category', 'manage-categories', 'create-product', 'manage-products', 'post-story', 'manage-stories', 'post-review', 'manage-reviews'
 
   // Categories & Products state
+  const [orderFilter, setOrderFilter] = useState('all');
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [productFilterCategory, setProductFilterCategory] = useState('all');
@@ -151,11 +153,37 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     }
   };
 
-  const fetchExistingOrders = () => {
+  const fetchExistingOrders = async () => {
     try {
-      const storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
+      // Fetch from Java Spring Boot backend
+      const response = await fetch('http://localhost:8080/api/orders');
+      if (response.ok) {
+        const dbOrders = await response.json();
+        setOrders(dbOrders);
+      } else {
+        // Fallback to local storage if backend is not running yet
+        let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
+        if (!Array.isArray(storedOrders)) storedOrders = [];
+        setOrders(storedOrders);
+      }
+    } catch (e) {
+      // Fallback to local storage if backend is offline
+      let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
+      if (!Array.isArray(storedOrders)) storedOrders = [];
       setOrders(storedOrders);
-    } catch (e) {}
+    }
+  };
+
+  const deleteOrder = (orderIdToDelete) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      try {
+        const updatedOrders = orders.filter(o => o.orderId !== orderIdToDelete);
+        setOrders(updatedOrders);
+        localStorage.setItem('customer_orders', JSON.stringify(updatedOrders));
+      } catch (err) {
+        alert('Failed to delete order.');
+      }
+    }
   };
 
   useEffect(() => {
@@ -2001,23 +2029,46 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
           </div>
         </div>
       )}
-    </div>
 
       {/* ================= ORDERS SECTION ================= */}
       {mainSection === 'orders' && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center mb-6 border-b border-zinc-200 pb-4">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 border-b border-zinc-200 pb-4">
             <h2 className="text-xl font-black text-zinc-900">Customer Orders</h2>
+            
+            {/* Filter Tabs */}
+            <div className="flex gap-2 p-1 bg-zinc-100 rounded-lg">
+              <button 
+                onClick={() => setOrderFilter('all')}
+                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${orderFilter === 'all' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
+              >
+                All Orders
+              </button>
+              <button 
+                onClick={() => setOrderFilter('pending')}
+                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${orderFilter === 'pending' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
+              >
+                Pending
+              </button>
+              <button 
+                onClick={() => setOrderFilter('paid')}
+                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${orderFilter === 'paid' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
+              >
+                Completed
+              </button>
+            </div>
           </div>
           
-          {orders.length === 0 ? (
+          {orders.filter(o => orderFilter === 'all' || (orderFilter === 'paid' ? o.isPaid : !o.isPaid)).length === 0 ? (
             <div className="text-center py-16 bg-zinc-50 rounded-3xl border border-dashed border-zinc-200">
               <ShoppingBag className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-              <p className="text-sm font-bold text-zinc-800">No orders yet</p>
+              <p className="text-sm font-bold text-zinc-800">
+                {orderFilter === 'all' ? 'No orders yet' : `No ${orderFilter} orders found`}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {orders.map((order, idx) => (
+              {orders.filter(o => orderFilter === 'all' || (orderFilter === 'paid' ? o.isPaid : !o.isPaid)).map((order, idx) => (
                 <div key={idx} className="bg-white border border-zinc-200 rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-zinc-100 pb-4 mb-4">
                     <div>
@@ -2029,9 +2080,18 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                       </div>
                       <p className="text-xs text-zinc-500 font-medium">Placed on {order.date}</p>
                     </div>
-                    <div className="text-right">
-                      <div className="font-black text-zinc-900 text-lg">INR ₹{order.total}</div>
-                      <p className="text-xs text-zinc-500 font-medium">Shipping: {order.shipping}</p>
+                    <div className="text-right flex flex-col items-end gap-2">
+                      <div>
+                        <div className="font-black text-zinc-900 text-lg">INR ₹{order.total}</div>
+                        <p className="text-xs text-zinc-500 font-medium">Shipping: {order.shipping}</p>
+                      </div>
+                      <button 
+                        onClick={() => deleteOrder(order.orderId)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
 
@@ -2042,30 +2102,30 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                         <Users className="w-3.5 h-3.5" /> Customer Details
                       </h4>
                       <div className="space-y-1.5 text-sm">
-                        <p><span className="font-semibold text-zinc-700">Name:</span> {order.customer.firstName} {order.customer.lastName}</p>
-                        <p><span className="font-semibold text-zinc-700">Phone:</span> {order.customer.phone} {order.customer.altPhone ? ` / ${order.customer.altPhone}` : ''}</p>
-                        <p><span className="font-semibold text-zinc-700">Address:</span> {order.customer.address}, {order.customer.apartment && `${order.customer.apartment},`} {order.customer.city}, {order.customer.state} - {order.customer.pincode}</p>
+                        <p><span className="font-semibold text-zinc-700">Name:</span> {order.customer?.firstName} {order.customer?.lastName}</p>
+                        <p><span className="font-semibold text-zinc-700">Phone:</span> {order.customer?.phone} {order.customer?.altPhone ? ` / ${order.customer?.altPhone}` : ''}</p>
+                        <p><span className="font-semibold text-zinc-700">Address:</span> {order.customer?.address}, {order.customer?.apartment && `${order.customer?.apartment},`} {order.customer?.city}, {order.customer?.state} - {order.customer?.pincode}</p>
                       </div>
                     </div>
 
                     {/* Order Items */}
                     <div className="bg-zinc-50 rounded-xl p-4">
                       <h4 className="text-xs font-black text-zinc-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <PackagePlus className="w-3.5 h-3.5" /> Ordered Items ({order.items.length})
+                        <PackagePlus className="w-3.5 h-3.5" /> Ordered Items ({Array.isArray(order.items) ? order.items.length : 0})
                       </h4>
                       <div className="space-y-3">
-                        {order.items.map((item, i) => (
+                        {Array.isArray(order.items) && order.items.map((item, i) => (
                           <div key={i} className="flex gap-3 bg-white p-3 rounded-lg border border-zinc-100">
                             <div className="w-12 h-16 bg-zinc-100 rounded-md overflow-hidden flex-shrink-0">
-                              <img src={item.image} alt={item.title} className="w-full h-full object-contain mix-blend-multiply" />
+                              <img src={item?.image} alt={item?.title} className="w-full h-full object-contain mix-blend-multiply" />
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-bold text-zinc-900 line-clamp-1">{item.title}</p>
+                              <p className="text-sm font-bold text-zinc-900 line-clamp-1">{item?.title || 'Unknown Product'}</p>
                               <div className="text-xs text-zinc-600 mt-1 space-y-0.5">
-                                <p><span className="font-semibold">Model:</span> {item.phoneModel}</p>
-                                {item.customName && <p><span className="font-semibold">Name:</span> {item.customName}</p>}
-                                {item.customPhoto && <p className="text-emerald-600 font-semibold flex items-center gap-1"><Check className="w-3 h-3" /> Photo Uploaded</p>}
-                                <p><span className="font-semibold">Qty:</span> {item.quantity} × ₹{item.price}</p>
+                                <p><span className="font-semibold">Model:</span> {item?.phoneModel || 'N/A'}</p>
+                                {item?.customName && <p><span className="font-semibold">Name:</span> {item.customName}</p>}
+                                {item?.customPhoto && <p className="text-emerald-600 font-semibold flex items-center gap-1"><Check className="w-3 h-3" /> Photo Uploaded</p>}
+                                <p><span className="font-semibold">Qty:</span> {item?.quantity || 1} × ₹{item?.price || 0}</p>
                               </div>
                             </div>
                           </div>
@@ -2079,8 +2139,6 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
           )}
         </div>
       )}
-
-      </div>
     </div>
   );
 }
