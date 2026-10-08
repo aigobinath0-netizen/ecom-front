@@ -89,7 +89,8 @@ export default function Checkout({
         items: [...cart],
         customer: { ...formData },
         total: finalTotal,
-        shipping: shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`
+        shipping: shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`,
+        isPaid: true
       };
 
       // Save to local storage for track order feature
