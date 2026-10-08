@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, ShoppingBag } from 'lucide-react';
+import { Menu, Search, ShoppingBag, X } from 'lucide-react';
 import Home from './Home';
 import Reviews from './Reviews';
 import ContactUs from './ContactUs';
@@ -32,6 +32,7 @@ function App() {
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Cart state persisted in localStorage
   const [cart, setCart] = useState(() => {
@@ -119,7 +120,10 @@ function App() {
       <header className="fixed top-0 left-0 right-0 z-40 w-full bg-white border-b border-zinc-200">
         <div className="relative max-w-[1600px] mx-auto px-4 sm:px-10 lg:px-16 flex items-center justify-between h-[68px] gap-3">
           <div className="flex items-center gap-1">
-            <button className="lg:hidden text-zinc-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-zinc-100 active:bg-zinc-200">
+            <button 
+              className="lg:hidden text-zinc-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-zinc-100 active:bg-zinc-200"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
               <Menu size={22} />
             </button>
             <nav className="hidden lg:flex items-center gap-6 text-[13px] font-semibold text-zinc-700">
@@ -196,6 +200,36 @@ function App() {
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 flex lg:hidden">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+            <div className="relative bg-white w-[80%] max-w-sm h-full flex flex-col shadow-2xl transition-transform animate-in slide-in-from-left duration-300 ease-out">
+              <div className="flex items-center justify-between p-5 border-b border-zinc-100">
+                <span className="font-coolvetica font-black text-2xl text-zinc-950 uppercase tracking-wide">Menu</span>
+                <button 
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <nav className="flex flex-col p-5 gap-5 text-base font-bold text-zinc-700 overflow-y-auto pb-20">
+                <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('home'); }}>Home</a>
+                <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('collection'); }}>Collections</a>
+                <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('reviews'); }}>Reviews</a>
+                <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('contact'); }}>Contact Us</a>
+                <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('faqs'); }}>FAQ's</a>
+                <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('track'); }}>Track Order</a>
+                
+                <div className="mt-4 pt-4 border-t border-zinc-100 flex flex-col gap-5">
+                  <a className="cursor-pointer hover:text-[var(--color-brand-primary)] flex items-center gap-3 transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('admin'); }}>Admin Dashboard</a>
+                </div>
+              </nav>
+            </div>
+          </div>
+        )}
       </header>
       <div style={{ height: '68px' }}></div>
 
