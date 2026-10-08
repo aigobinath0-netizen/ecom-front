@@ -119,7 +119,7 @@ export default function Footer() {
         href="https://wa.me/918825544004" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-[#25D366] hover:bg-[#1ebd5a] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all z-50"
+        className="fixed bottom-[85px] lg:bottom-6 right-4 lg:right-6 w-14 h-14 bg-[#25D366] hover:bg-[#1ebd5a] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all z-50"
       >
         <MessageCircle size={30} fill="currentColor" />
       </a>

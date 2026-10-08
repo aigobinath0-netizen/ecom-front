@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, X } from 'lucide-react';
+import { Menu, Search, ShoppingBag, X, Home as HomeIcon, LayoutGrid, Star } from 'lucide-react';
 import Home from './Home';
 import Reviews from './Reviews';
 import ContactUs from './ContactUs';
@@ -40,19 +40,7 @@ function App() {
       const saved = localStorage.getItem('pravar_cart');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
-    // Initial sample item matching the screenshot if empty
-    return [
-      {
-        id: 'sample-murugan-1',
-        title: 'Murugan Strong Acrylic Cases',
-        image: '/images/12857815f64121652110d55a.jpg',
-        price: 499,
-        oldPrice: 799,
-        model: 'SAMSUNG - SAMSUNG A02',
-        wording: 'ஓம் சரவணபவ',
-        quantity: 1
-      }
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -233,7 +221,7 @@ function App() {
       </header>
       <div style={{ height: '68px' }}></div>
 
-      <main className="flex-1 flex flex-col min-h-[calc(100vh-68px)]">
+      <main className="flex-1 flex flex-col min-h-[calc(100vh-68px)] pb-16 lg:pb-0">
         <Routes>
           <Route path="/" element={
             <Home 
@@ -294,6 +282,38 @@ function App() {
         
         <Footer />
       </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black text-white flex justify-around items-center px-2 py-3 z-40 border-t border-zinc-900">
+        <button onClick={() => navigateTo('home')} className={`flex flex-col items-center gap-1 ${currentPage === 'home' ? 'text-amber-500' : 'text-zinc-400 hover:text-white'} transition-colors w-16`}>
+          <HomeIcon size={22} />
+          <span className="text-[10px] font-medium">Home</span>
+        </button>
+        <button onClick={() => navigateTo('collection')} className={`flex flex-col items-center gap-1 ${currentPage === 'collection' ? 'text-amber-500' : 'text-zinc-400 hover:text-white'} transition-colors w-16`}>
+          <LayoutGrid size={22} />
+          <span className="text-[10px] font-medium">Collections</span>
+        </button>
+        <button onClick={() => navigateTo('cart')} className={`relative flex flex-col items-center gap-1 ${currentPage === 'cart' ? 'text-amber-500' : 'text-zinc-400 hover:text-white'} transition-colors w-16`}>
+          <div className="relative">
+            <ShoppingBag size={22} />
+            {totalCartCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-amber-500 text-black text-[9px] font-black rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
+                {totalCartCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-medium">Cart</span>
+        </button>
+        <button onClick={() => navigateTo('reviews')} className={`flex flex-col items-center gap-1 ${currentPage === 'reviews' ? 'text-amber-500' : 'text-zinc-400 hover:text-white'} transition-colors w-16`}>
+          <Star size={22} />
+          <span className="text-[10px] font-medium">Reviews</span>
+        </button>
+        <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors w-16">
+          <Menu size={22} />
+          <span className="text-[10px] font-medium">Menu</span>
+        </button>
+      </div>
+
     </div>
   );
 }
