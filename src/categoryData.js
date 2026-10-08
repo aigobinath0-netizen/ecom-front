@@ -3,7 +3,7 @@
 export const DEFAULT_CATEGORIES = [];
 export const DEFAULT_PRODUCTS = [];
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = 'https://ecom-back-kwol.onrender.com/api';
 
 // Helper functions for categories (synchronous cache read)
 export function getStoredCategories() {

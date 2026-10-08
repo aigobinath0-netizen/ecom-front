@@ -116,7 +116,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
   const fetchExistingStories = async () => {
     try {
-      const res = await fetch('http://localhost:8081/api/stories');
+      const res = await fetch('https://ecom-back-kwol.onrender.com/api/stories');
       const data = await res.json();
       if (Array.isArray(data)) {
         const deletedIds = JSON.parse(localStorage.getItem('deleted_story_ids') || '[]');
@@ -133,7 +133,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
   const fetchExistingReviews = async () => {
     try {
-      const res = await fetch('http://localhost:8081/api/reviews');
+      const res = await fetch('https://ecom-back-kwol.onrender.com/api/reviews');
       const data = await res.json();
       if (Array.isArray(data)) {
         const deletedIds = JSON.parse(localStorage.getItem('deleted_review_ids') || '[]');
@@ -200,7 +200,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
     saveStoredCategory(categoryObj);
     try {
-      fetch('http://localhost:8081/api/categories', {
+      fetch('https://ecom-back-kwol.onrender.com/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryObj)
@@ -224,7 +224,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     if (!window.confirm(`Are you sure you want to delete category "${catTitle}"?`)) return;
     deleteStoredCategory(id);
     try {
-      fetch(`http://localhost:8081/api/categories/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`https://ecom-back-kwol.onrender.com/api/categories/${id}`, { method: 'DELETE' }).catch(() => {});
     } catch (err) {}
     refreshCategoriesAndProducts();
   };
@@ -234,7 +234,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     if (!editingCategory.title.trim()) return;
     saveStoredCategory(editingCategory);
     try {
-      fetch(`http://localhost:8081/api/categories/${editingCategory.id}`, {
+      fetch(`https://ecom-back-kwol.onrender.com/api/categories/${editingCategory.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingCategory)
@@ -293,7 +293,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
     saveStoredProduct(productObj);
     try {
-      fetch('http://localhost:8081/api/products', {
+      fetch('https://ecom-back-kwol.onrender.com/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productObj)
@@ -314,7 +314,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     if (!window.confirm(`Are you sure you want to delete product "${prodTitle}"?`)) return;
     deleteStoredProduct(id);
     try {
-      fetch(`http://localhost:8081/api/products/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`https://ecom-back-kwol.onrender.com/api/products/${id}`, { method: 'DELETE' }).catch(() => {});
     } catch (err) {}
     refreshCategoriesAndProducts();
   };
@@ -324,7 +324,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     if (!editingProduct.title.trim()) return;
     saveStoredProduct(editingProduct);
     try {
-      fetch(`http://localhost:8081/api/products/${editingProduct.id}`, {
+      fetch(`https://ecom-back-kwol.onrender.com/api/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingProduct)
@@ -366,7 +366,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     };
 
     try {
-      await fetch('http://localhost:8081/api/stories', {
+      await fetch('https://ecom-back-kwol.onrender.com/api/stories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -389,8 +389,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const handleDeleteStory = async (id) => {
     if (!window.confirm('Are you sure you want to delete this story?')) return;
     try {
-      fetch(`http://localhost:8081/api/stories/${id}`, { method: 'DELETE' }).catch(() => {});
-      fetch(`http://localhost:8081/api/stories/delete/${id}`, { method: 'POST' }).catch(() => {});
+      fetch(`https://ecom-back-kwol.onrender.com/api/stories/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`https://ecom-back-kwol.onrender.com/api/stories/delete/${id}`, { method: 'POST' }).catch(() => {});
     } catch (e) {}
 
     try {
@@ -446,7 +446,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     };
 
     try {
-      fetch(`http://localhost:8081/api/stories/${editingStory.id}`, {
+      fetch(`https://ecom-back-kwol.onrender.com/api/stories/${editingStory.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -489,7 +489,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     };
 
     try {
-      await fetch('http://localhost:8081/api/reviews', {
+      await fetch('https://ecom-back-kwol.onrender.com/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -519,7 +519,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const handleDeleteReview = async (id) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return;
     try {
-      fetch(`http://localhost:8081/api/reviews/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`https://ecom-back-kwol.onrender.com/api/reviews/${id}`, { method: 'DELETE' }).catch(() => {});
     } catch (e) {}
 
     try {
@@ -554,7 +554,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     const payload = { ...editingReview };
 
     try {
-      fetch(`http://localhost:8081/api/reviews/${editingReview.id}`, {
+      fetch(`https://ecom-back-kwol.onrender.com/api/reviews/${editingReview.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

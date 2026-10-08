@@ -25,7 +25,7 @@ export default function Reviews() {
     const editedReviews = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
 
     try {
-      const response = await fetch('http://localhost:8081/api/reviews');
+      const response = await fetch('https://ecom-back-kwol.onrender.com/api/reviews');
       const data = await response.json();
       if (Array.isArray(data)) {
         const active = data
@@ -55,7 +55,7 @@ export default function Reviews() {
     const editedStories = JSON.parse(localStorage.getItem('edited_stories') || '{}');
 
     try {
-      const response = await fetch('http://localhost:8081/api/stories');
+      const response = await fetch('https://ecom-back-kwol.onrender.com/api/stories');
       const data = await response.json();
       let combinedStories = [];
 
@@ -227,7 +227,7 @@ export default function Reviews() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8081/api/reviews', {
+      const response = await fetch('https://ecom-back-kwol.onrender.com/api/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
