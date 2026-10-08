@@ -1,7 +1,7 @@
 import React from 'react';
 import { MessageCircle, ShieldCheck, Truck } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer({ navigateTo }) {
   return (
     <footer className="w-full flex flex-col">
       {/* Banner */}
@@ -85,19 +85,19 @@ export default function Footer() {
             {/* Company Links */}
             <div className="flex flex-col gap-4">
               <h4 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Company</h4>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">About Us</a>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">Terms & Conditions</a>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">Privacy Policy</a>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">Shipping Policy</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('faqs?category=about')}>About Us</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('faqs?category=payment')}>Terms & Conditions</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('faqs?category=payment')}>Privacy Policy</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('faqs?category=shipping')}>Shipping Policy</a>
             </div>
 
             {/* Support Links */}
             <div className="flex flex-col gap-4">
               <h4 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Support</h4>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">Contact Us</a>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">Track Order</a>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">Cancellations & Refunds</a>
-              <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">FAQ's</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('contact')}>Contact Us</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('track')}>Track Order</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('faqs?category=returns')}>Cancellations & Refunds</a>
+              <a className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors" onClick={() => navigateTo('faqs')}>FAQ's</a>
             </div>
           </div>
 

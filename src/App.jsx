@@ -11,6 +11,7 @@ import Product from './Product';
 import Cart from './Cart';
 import Checkout from './Checkout';
 import Footer from './Footer';
+import StaticPage from './StaticPage';
 
 import Admin from './Admin';
 
@@ -29,6 +30,11 @@ function App() {
   else if (path === '/product') currentPage = 'product';
   else if (path === '/cart') currentPage = 'cart';
   else if (path === '/checkout') currentPage = 'checkout';
+  else if (path === '/about') currentPage = 'about';
+  else if (path === '/terms') currentPage = 'terms';
+  else if (path === '/privacy') currentPage = 'privacy';
+  else if (path === '/shipping') currentPage = 'shipping';
+  else if (path === '/cancellations') currentPage = 'cancellations';
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -272,6 +278,11 @@ function App() {
               setCurrentPage={setCurrentPageWrapper}
             />
           } />
+          <Route path="/about" element={<StaticPage title="About Us" />} />
+          <Route path="/terms" element={<StaticPage title="Terms & Conditions" />} />
+          <Route path="/privacy" element={<StaticPage title="Privacy Policy" />} />
+          <Route path="/shipping" element={<StaticPage title="Shipping Policy" />} />
+          <Route path="/cancellations" element={<StaticPage title="Cancellations & Refunds" />} />
           <Route path="/admin" element={
             <Admin 
               setCurrentPage={setCurrentPageWrapper}
@@ -280,7 +291,7 @@ function App() {
           } />
         </Routes>
         
-        <Footer />
+        <Footer navigateTo={navigateTo} />
       </main>
 
       {/* Mobile Bottom Navigation Bar */}

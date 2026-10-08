@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Info, CreditCard, Truck, ShoppingCart, Tag, Wand2, RotateCcw, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Faqs() {
+  const location = useLocation();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [openQuestionIdx, setOpenQuestionIdx] = useState(0);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('category');
+    if (cat) {
+      setSelectedCategory(cat);
+      setOpenQuestionIdx(0);
+    } else {
+      setSelectedCategory(null);
+    }
+  }, [location.search]);
 
   const categories = [
     { id: 'about', title: 'About Stickover', count: 8, icon: Info },

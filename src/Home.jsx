@@ -76,9 +76,9 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
         <section className="mt-8 sm:mt-14">
           <div className="flex items-center justify-between mb-5 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-black text-zinc-900 uppercase tracking-wide">Shop By Category</h2>
-            <button 
+            <button
               type="button"
-              className="text-xs sm:text-sm font-bold text-zinc-900 border border-zinc-200 rounded-full px-3 py-1.5 hover:bg-zinc-50 whitespace-nowrap cursor-pointer" 
+              className="text-xs sm:text-sm font-bold text-zinc-900 border border-zinc-200 rounded-full px-3 py-1.5 hover:bg-zinc-50 whitespace-nowrap cursor-pointer"
               onClick={() => {
                 if (onSelectCategory && categories.length > 0) {
                   onSelectCategory(categories[0]);
@@ -93,9 +93,9 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
             {categories.length > 0 ? (
               categories.map((cat, idx) => (
-                <div 
-                  key={cat.id || idx} 
-                  className="group flex flex-col items-center cursor-pointer" 
+                <div
+                  key={cat.id || idx}
+                  className="group flex flex-col items-center cursor-pointer"
                   onClick={() => {
                     if (onSelectCategory) {
                       onSelectCategory(cat);
@@ -104,8 +104,8 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
                     }
                   }}
                 >
-                  <div className="aspect-[4/5] w-full overflow-hidden rounded-2xl bg-white shadow-sm border border-zinc-200 group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/40 transition-all p-3 flex items-center justify-center">
-                    <img alt={cat.title} className="w-full h-full object-contain group-hover:scale-105 transition duration-300 mix-blend-multiply" src={cat.image} />
+                  <div className="aspect-square w-full overflow-hidden rounded-2xl bg-white shadow-sm border border-zinc-200 group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/40 transition-all p-3 flex items-center justify-center">
+                    <img alt={cat.title} className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply" src={cat.image} />
                   </div>
                   <span className="mt-3 text-[11px] sm:text-sm font-bold leading-snug text-center text-zinc-700 group-hover:text-amber-500 transition-colors line-clamp-2">{cat.title}</span>
                 </div>
@@ -132,13 +132,13 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
             <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
               {popularProducts.map((prod) => (
                 <div key={prod.id} className="w-[46%] sm:w-[220px] shrink-0 snap-start">
-                  <div 
-                    className="group bg-white border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-lg transition-all rounded-2xl overflow-hidden flex flex-col cursor-pointer" 
+                  <div
+                    className="group bg-white border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-lg transition-all rounded-2xl overflow-hidden flex flex-col cursor-pointer"
                     onClick={() => onSelectProduct && onSelectProduct(prod)}
                   >
-                    <div className="relative bg-zinc-50/40 flex items-center justify-center aspect-[4/5] overflow-hidden rounded-t-2xl">
+                    <div className="relative bg-zinc-50/40 flex items-center justify-center aspect-[5/6] overflow-hidden rounded-t-2xl p-3">
                       <span className="absolute top-2 left-2 z-10 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">{prod.badge || 'Sale'}</span>
-                      <img alt={prod.title} className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition duration-300 mix-blend-multiply" src={prod.image} />
+                      <img alt={prod.title} className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply" src={prod.image} />
                     </div>
                     <div className="p-2 sm:p-4 text-center">
                       <h3 className="text-xs sm:text-sm text-zinc-900 font-bold break-words whitespace-normal line-clamp-2 min-h-[35px]">{prod.title}</h3>

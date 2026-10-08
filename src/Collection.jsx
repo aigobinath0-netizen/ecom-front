@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, ArrowLeft, Sparkles } from 'lucide-react';
-import { 
-  getStoredCategories, 
-  getStoredProducts, 
-  fetchCategoriesFromApi, 
-  fetchProductsFromApi 
+import {
+  getStoredCategories,
+  getStoredProducts,
+  fetchCategoriesFromApi,
+  fetchProductsFromApi
 } from './categoryData';
 
-export default function Collection({ 
-  selectedCategory, 
-  setSelectedCategory, 
-  setCurrentPage, 
-  onSelectProduct 
+export default function Collection({
+  selectedCategory,
+  setSelectedCategory,
+  setCurrentPage,
+  onSelectProduct
 }) {
   const [categories, setCategories] = useState([]);
   const [currentCat, setCurrentCat] = useState(null);
@@ -81,7 +81,7 @@ export default function Collection({
       <div className="flex flex-col min-h-screen bg-white pb-20">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-10 lg:px-20 w-full pt-8 sm:pt-12">
           <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 mb-6">
-            <button 
+            <button
               onClick={() => setCurrentPage && setCurrentPage('home')}
               className="hover:text-zinc-950 transition-colors flex items-center gap-1 cursor-pointer"
             >
@@ -99,7 +99,7 @@ export default function Collection({
             <p className="text-xs sm:text-sm text-zinc-500 max-w-md mx-auto mb-6">
               We are currently preparing exciting collections. Please check back shortly!
             </p>
-            <button 
+            <button
               onClick={() => setCurrentPage && setCurrentPage('home')}
               className="bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold px-6 py-3 rounded-xl transition-colors shadow-md cursor-pointer"
             >
@@ -117,7 +117,7 @@ export default function Collection({
       <div className="max-w-[1600px] mx-auto px-4 sm:px-10 lg:px-20 w-full pt-8 sm:pt-12">
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 mb-4 sm:mb-6">
-          <button 
+          <button
             onClick={() => setCurrentPage && setCurrentPage('home')}
             className="hover:text-zinc-950 transition-colors flex items-center gap-1 cursor-pointer"
           >
@@ -133,10 +133,10 @@ export default function Collection({
         {(currentCat?.bannerImage || currentCat?.image) && (
           <div className="w-full rounded-2xl sm:rounded-3xl overflow-hidden mb-8 sm:mb-10 shadow-2xl border border-zinc-200/80">
             {/* Exactly fits 1600x800 image without borders extending outside or cropping */}
-            <img 
-              src={currentCat.bannerImage || currentCat.image} 
-              alt={currentCat.title} 
-              className="w-full h-auto aspect-[2/1] object-cover block" 
+            <img
+              src={currentCat.bannerImage || currentCat.image}
+              alt={currentCat.title}
+              className="w-full h-auto aspect-[2/1] object-cover block"
             />
           </div>
         )}
@@ -159,11 +159,10 @@ export default function Collection({
               <button
                 key={cat.id}
                 onClick={() => handleSelectCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  isSelected
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${isSelected
                     ? 'bg-zinc-950 text-white shadow-md'
                     : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200'
-                }`}
+                  }`}
               >
                 {cat.title}
               </button>
@@ -181,16 +180,16 @@ export default function Collection({
                 className="group bg-white border border-zinc-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden flex flex-col cursor-pointer"
               >
                 {/* Product Image Box */}
-                <div className="relative bg-zinc-50/60 aspect-[3/4] p-4 flex items-center justify-center overflow-hidden">
+                <div className="relative bg-zinc-50/60 aspect-[5/6] p-3 flex items-center justify-center overflow-hidden">
                   {/* SALE Badge */}
                   <span className="absolute top-2.5 left-2.5 z-10 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md">
                     {prod.badge || 'SALE'}
                   </span>
 
-                  <img 
-                    alt={prod.title} 
-                    src={prod.image} 
-                    className="w-full h-full object-contain group-hover:scale-105 transition duration-300 mix-blend-multiply" 
+                  <img
+                    alt={prod.title}
+                    src={prod.image}
+                    className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply"
                   />
                 </div>
 
@@ -199,7 +198,7 @@ export default function Collection({
                   <h3 className="text-xs sm:text-sm text-zinc-900 font-bold break-words line-clamp-2 min-h-[36px] group-hover:text-amber-600 transition-colors">
                     {prod.title}
                   </h3>
-                  
+
                   <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 mt-2 pt-1 border-t border-zinc-50">
                     <span className="text-zinc-950 font-black text-sm sm:text-base">
                       ₹{prod.price}
