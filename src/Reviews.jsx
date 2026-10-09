@@ -57,9 +57,8 @@ export default function Reviews() {
     try {
       const response = await fetch('https://ecom-back-kwol.onrender.com/api/stories');
       const data = await response.json();
-      let combinedStories = [];
 
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         const normalized = data
           .filter(s => !deletedIds.includes(s.id))
           .map(s => {
@@ -90,35 +89,33 @@ export default function Reviews() {
               img: imgs[0] || ''
             };
           });
-        combinedStories = [...normalized.reverse()];
+        setStories(normalized.reverse());
+        return;
       }
-
-      // Check localStorage for local custom stories
-      try {
-        const local = JSON.parse(localStorage.getItem('custom_stories') || '[]');
-        if (Array.isArray(local) && local.length > 0) {
-          const localNormalized = local
-            .filter(s => !deletedIds.includes(s.id))
-            .map((s, idx) => {
-              const effective = editedStories[s.id] || s;
-              return {
-                id: effective.id || ('local-' + idx),
-                name: effective.name,
-                time: 'Just now',
-                images: effective.images || (effective.img ? [effective.img] : []),
-                img: effective.img || (effective.images && effective.images[0]) || ''
-              };
-            });
-          combinedStories = [...localNormalized, ...combinedStories];
-        }
-      } catch (e) {
-        console.error(e);
-      }
-
-      // ONLY admin posted stories!
-      setStories(combinedStories);
     } catch (error) {
-      console.error("Failed to fetch stories:", error);
+      console.error("Failed to fetch stories from server:", error);
+    }
+
+    // Offline fallback only
+    try {
+      const local = JSON.parse(localStorage.getItem('custom_stories') || '[]');
+      if (Array.isArray(local) && local.length > 0) {
+        const localNormalized = local
+          .filter(s => !deletedIds.includes(s.id))
+          .map((s, idx) => {
+            const effective = editedStories[s.id] || s;
+            return {
+              id: effective.id || ('local-' + idx),
+              name: effective.name,
+              time: 'Just now',
+              images: effective.images || (effective.img ? [effective.img] : []),
+              img: effective.img || (effective.images && effective.images[0]) || ''
+            };
+          });
+        setStories(localNormalized);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 

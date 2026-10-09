@@ -154,24 +154,53 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   };
 
   const fetchExistingOrders = async () => {
+    let combinedOrders = [];
     try {
       // Fetch from Java Spring Boot backend
-      const response = await fetch('http://localhost:8080/api/orders');
+      const response = await fetch('https://ecom-back-kwol.onrender.com/api/orders');
       if (response.ok) {
         const dbOrders = await response.json();
-        setOrders(dbOrders);
-      } else {
-        // Fallback to local storage if backend is not running yet
-        let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
-        if (!Array.isArray(storedOrders)) storedOrders = [];
-        setOrders(storedOrders);
+        
+        // Parse items and customer strings from database back into objects
+        const parsedDbOrders = dbOrders.map(order => {
+          let parsedItems = order.items;
+          let parsedCustomer = order.customer;
+          
+          try {
+            if (typeof order.items === 'string') parsedItems = JSON.parse(order.items);
+          } catch(e) {}
+          
+          try {
+            if (typeof order.customer === 'string') parsedCustomer = JSON.parse(order.customer);
+          } catch(e) {}
+
+          return {
+            ...order,
+            items: parsedItems,
+            customer: parsedCustomer
+          };
+        });
+        combinedOrders = [...parsedDbOrders.reverse()];
       }
     } catch (e) {
-      // Fallback to local storage if backend is offline
-      let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
-      if (!Array.isArray(storedOrders)) storedOrders = [];
-      setOrders(storedOrders);
+      console.warn("Backend offline, using local orders only", e);
     }
+
+    // Always merge with local storage as a fallback for orders that couldn't reach the backend
+    try {
+      let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
+      if (Array.isArray(storedOrders)) {
+        // Only add local orders that aren't already in the combined list
+        const existingIds = new Set(combinedOrders.map(o => o.orderId));
+        const missingLocalOrders = storedOrders.filter(o => !existingIds.has(o.orderId));
+        combinedOrders = [...missingLocalOrders, ...combinedOrders];
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
+    // Sort by orderId descending or just set them
+    setOrders(combinedOrders);
   };
 
   const deleteOrder = (orderIdToDelete) => {
@@ -2122,8 +2151,9 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                             <div className="flex-1">
                               <p className="text-sm font-bold text-zinc-900 line-clamp-1">{item?.title || 'Unknown Product'}</p>
                               <div className="text-xs text-zinc-600 mt-1 space-y-0.5">
-                                <p><span className="font-semibold">Model:</span> {item?.phoneModel || 'N/A'}</p>
+                                <p><span className="font-semibold">Model:</span> {item?.model || item?.phoneModel || 'N/A'}</p>
                                 {item?.customName && <p><span className="font-semibold">Name:</span> {item.customName}</p>}
+                                {item?.wording && <p><span className="font-semibold">Wording:</span> {item.wording}</p>}
                                 {item?.customPhoto && <p className="text-emerald-600 font-semibold flex items-center gap-1"><Check className="w-3 h-3" /> Photo Uploaded</p>}
                                 <p><span className="font-semibold">Qty:</span> {item?.quantity || 1} × ₹{item?.price || 0}</p>
                               </div>

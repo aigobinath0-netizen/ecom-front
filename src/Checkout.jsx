@@ -94,7 +94,7 @@ export default function Checkout({
 
     // 1. Send to Java Backend Database
     try {
-      fetch('http://localhost:8080/api/orders', {
+      fetch('https://ecom-back-kwol.onrender.com/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(placedOrder)

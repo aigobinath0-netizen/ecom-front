@@ -1,6 +1,92 @@
-import React, { useState } from 'react';
-import { Share2, ChevronLeft, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Share2, ChevronLeft, Check, ChevronDown, Search } from 'lucide-react';
 import { PHONE_MODELS_BY_BRAND } from './phoneModelsData';
+
+const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = Object.entries(optionsByBrand).reduce((acc, [brand, models]) => {
+    const matched = models.filter(m => m.toLowerCase().includes(search.toLowerCase()));
+    if (matched.length > 0) {
+      acc.push({ brand, models: matched });
+    }
+    return acc;
+  }, []);
+
+  return (
+    <div className="relative w-full mb-3" ref={dropdownRef}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-sm text-zinc-700 focus:outline-none focus:border-zinc-900 shadow-sm font-medium cursor-pointer flex justify-between items-center"
+      >
+        <span>{value || "-- Choose your phone model --"}</span>
+        <ChevronDown size={18} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+      
+      {isOpen && (
+        <div className="absolute z-50 w-full top-full mt-2 left-0 bg-white border border-zinc-200 rounded-xl shadow-xl max-h-[350px] flex flex-col overflow-hidden">
+          <div className="p-3 border-b border-zinc-100 shrink-0 bg-white">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search your model..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              />
+            </div>
+          </div>
+          <div className="overflow-y-auto p-2 scrollbar-thin bg-white">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map(({ brand, models }) => (
+                <div key={brand} className="mb-2 last:mb-0">
+                  <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-3 py-1.5 bg-zinc-50/50 rounded-md mb-1">
+                    {brand} ({models.length})
+                  </div>
+                  {models.map(model => (
+                    <div 
+                      key={model}
+                      onClick={() => {
+                        onChange(model);
+                        setIsOpen(false);
+                        setSearch('');
+                      }}
+                      className={`px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors ${
+                        value === model 
+                          ? 'bg-amber-50 text-amber-900 font-bold' 
+                          : 'text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      {model}
+                    </div>
+                  ))}
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-sm text-zinc-500">
+                No models found matching "{search}"
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function Product({ 
   selectedProduct, 
@@ -142,22 +228,11 @@ export default function Product({
                 )}
               </div>
 
-              <select 
+              <SearchableSelect 
+                optionsByBrand={PHONE_MODELS_BY_BRAND}
                 value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-sm text-zinc-700 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 mb-3 appearance-none cursor-pointer shadow-sm font-medium"
-              >
-                <option value="">-- Choose your phone model --</option>
-                {Object.entries(PHONE_MODELS_BY_BRAND).map(([brand, models]) => (
-                  <optgroup key={brand} label={`━━━ ${brand.toUpperCase()} (${models.length}) ━━━`}>
-                    {models.map((model) => (
-                      <option key={model} value={model}>
-                        {model}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+                onChange={setSelectedModel}
+              />
 
               <p className="text-xs text-zinc-500">
                 If your model is not found, kindly message us on WhatsApp.
