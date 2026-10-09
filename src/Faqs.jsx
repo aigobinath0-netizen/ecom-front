@@ -19,7 +19,7 @@ export default function Faqs() {
   }, [location.search]);
 
   const categories = [
-    { id: 'about', title: 'About Stickover', count: 8, icon: Info },
+    { id: 'about', title: 'About Pravar Wraps', count: 8, icon: Info },
     { id: 'payment', title: 'Payment and Security', count: 5, icon: CreditCard },
     { id: 'shipping', title: 'Shipping and Delivery', count: 5, icon: Truck },
     { id: 'order', title: 'How to Place Order?', count: 5, icon: ShoppingCart },
@@ -31,12 +31,12 @@ export default function Faqs() {
   const faqData = {
     'about': [
       { q: 'How long does delivery take?', a: 'Orders are usually delivered within 4-7 business days across India.' },
-      { q: 'Who is Stickover and what do you sell?', a: 'Stickover is a custom phone case and sticker store — we design, print, and ship personalised phone cases (acrylic, glass, gold-finish and more) and custom stickers pan-India.' },
+      { q: 'Who is Pravar Wraps and what do you sell?', a: 'Pravar Wraps is a custom phone case and sticker store — we design, print, and ship personalised phone cases (acrylic, glass, gold-finish and more) and custom stickers pan-India.' },
       { q: 'Do you offer Cash on Delivery?', a: 'Yes, all orders currently support Cash on Delivery (COD).' },
-      { q: 'Where is Stickover based?', a: 'We are based in Avinashi, Tiruppur, Tamil Nadu, and we ship orders across India.' },
+      { q: 'Where is Pravar Wraps based?', a: 'We are based in Avinashi, Tiruppur, Tamil Nadu, and we ship orders across India.' },
       { q: 'Can I return or exchange my order?', a: 'Yes, please check our Returns & Exchange policy page for details.' },
-      { q: 'How long has Stickover been making custom cases?', a: 'We have been crafting customised acrylic and gold phone cases for over 5 years, focused on durability and print quality.' },
-      { q: 'Does Stickover only make phone cases?', a: 'Phone cases are our main product, but we also print custom stickers and a few personalised accessories — check our Collections page for the full range.' },
+      { q: 'How long has Pravar Wraps been making custom cases?', a: 'We have been crafting customised acrylic and gold phone cases for over 5 years, focused on durability and print quality.' },
+      { q: 'Does Pravar Wraps only make phone cases?', a: 'Phone cases are our main product, but we also print custom stickers and a few personalised accessories — check our Collections page for the full range.' },
       { q: 'How can I stay updated on new designs?', a: 'Follow us on Instagram or subscribe to our newsletter from the homepage footer — new arrivals are posted there first.' }
     ],
     'payment': [

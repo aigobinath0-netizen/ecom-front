@@ -43,7 +43,7 @@ export default function Footer({ navigateTo }) {
               </a>
               <a href="#" className="flex flex-col items-center gap-2 group">
                 <div className="w-14 h-14 md:w-12 md:h-12 rounded-full bg-[#FF0000] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="white"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" stroke="none"/></svg>
                 </div>
                 <span className="text-[12px] font-bold text-zinc-200 group-hover:text-white transition-colors mt-1">YouTube</span>
               </a>
@@ -81,7 +81,7 @@ export default function Footer({ navigateTo }) {
       </div>
 
       {/* White Section */}
-      <div className="bg-white py-8 md:py-16 px-6 rounded-t-3xl -mt-6 relative z-10 pb-32 md:pb-16">
+      <div className="bg-white py-8 md:py-12 px-6 rounded-t-3xl -mt-6 relative z-10 pb-20 md:pb-8">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-40">
             {/* Company Links */}
@@ -122,11 +122,11 @@ export default function Footer({ navigateTo }) {
           {/* Copyright */}
           <div className="mt-8 md:mt-20 md:pt-8 md:border-t md:border-zinc-100 flex flex-col items-center gap-3 md:gap-4">
             <div className="flex items-center gap-2">
-              <img alt="Stickover" className="h-6 w-6 md:h-6 md:w-6 object-cover rounded-full" src="/images/logo-mark-ayXhBs9R.png" />
-              <span className="font-coolvetica font-black text-[15px] md:text-sm text-zinc-950 tracking-wider uppercase">STICKOVER</span>
+              <img alt="Pravar Wraps" className="h-6 w-6 md:h-6 md:w-6 object-cover rounded-full" src="/images/logo-mark-ayXhBs9R.png" />
+              <span className="font-coolvetica font-black text-[15px] md:text-sm text-zinc-950 tracking-wider uppercase">PRAVAR WRAPS</span>
             </div>
             <p className="text-[13px] md:text-[10px] text-zinc-400 font-medium">
-              Copyright © 2026. All rights reserved by www.stickover.in
+              Copyright © 2026. All rights reserved by www.pravarwraps.com
             </p>
           </div>
         </div>
