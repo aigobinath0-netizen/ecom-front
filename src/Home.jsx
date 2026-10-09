@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Truck, ShieldCheck, Headphones } from 'lucide-react';
 import { getStoredCategories, getStoredProducts, fetchCategoriesFromApi, fetchProductsFromApi } from './categoryData';
+import heroVideo from './assets/watermark-removed (1).mp4';
 
 export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct }) {
   const [categories, setCategories] = useState(getStoredCategories());
@@ -47,8 +48,15 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
       </div>
 
       <section className="max-w-[1600px] mx-auto mt-0 sm:mt-6 sm:px-10 lg:px-20">
-        <div className="relative w-full overflow-hidden border-0 sm:border sm:border-[#f0f0f2] sm:rounded-2xl sm:shadow-[0_1px_2px_rgba(24,24,27,0.04)]" style={{ aspectRatio: '3548 / 1774' }}>
-          <img alt="Banner" className="w-full h-full object-cover" src="/images/3879f4a71d1adb4577d0f498.png" />
+        <div className="relative w-full overflow-hidden border-0 sm:border sm:border-[#f0f0f2] sm:rounded-2xl sm:shadow-[0_1px_2px_rgba(24,24,27,0.04)]" style={{ aspectRatio: '16 / 9' }}>
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover" 
+            src={heroVideo} 
+          />
         </div>
       </section>
 
