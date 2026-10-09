@@ -724,6 +724,21 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
         <button
           type="button"
           onClick={() => {
+            setMainSection('dashboard');
+            setActiveSubTab('revenue');
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            mainSection === 'dashboard'
+              ? 'bg-zinc-950 text-white shadow-md'
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>Dashboard</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
             setMainSection('categories');
             setActiveSubTab('manage-categories');
           }}
@@ -804,6 +819,72 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
       {/* Main Content Area */}
       <div className="bg-white rounded-3xl border border-zinc-200/80 shadow-sm p-4 sm:p-8 mt-2">
+        
+        {/* ================= DASHBOARD SECTION ================= */}
+        {mainSection === 'dashboard' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-black text-zinc-900 border-b border-zinc-200 pb-4 mb-6">Revenue Dashboard</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-2">Total Revenue</h3>
+                <div className="text-3xl font-black text-amber-900">
+                  ₹{orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0).toLocaleString()}
+                </div>
+                <p className="text-xs text-amber-600 mt-2 font-medium">All time placed orders</p>
+              </div>
+              
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">Confirmed Paid</h3>
+                <div className="text-3xl font-black text-emerald-900">
+                  ₹{orders.filter(o => o.isPaid).reduce((sum, order) => sum + parseFloat(order.total || 0), 0).toLocaleString()}
+                </div>
+                <p className="text-xs text-emerald-600 mt-2 font-medium">Revenue from paid orders</p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-2">Items Sold</h3>
+                <div className="text-3xl font-black text-blue-900">
+                  {orders.filter(o => o.isPaid).reduce((sum, order) => sum + (Array.isArray(order.items) ? order.items.reduce((s, item) => s + (item.quantity || 1), 0) : 0), 0).toLocaleString()}
+                </div>
+                <p className="text-xs text-blue-600 mt-2 font-medium">Products from paid orders</p>
+              </div>
+            </div>
+            
+            <div className="mt-8 bg-zinc-50 border border-zinc-200 rounded-2xl p-6">
+              <h3 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500" /> Recent Activity
+              </h3>
+              {orders.length === 0 ? (
+                <p className="text-sm text-zinc-500 font-medium">No recent orders found.</p>
+              ) : (
+                <div className="space-y-4">
+                  {orders.slice(0, 5).map((order, i) => (
+                    <div key={i} className="flex justify-between items-center bg-white border border-zinc-100 p-4 rounded-xl">
+                      <div>
+                        <div className="text-sm font-bold text-zinc-900">{order.orderId}</div>
+                        <div className="text-xs text-zinc-500">{order.date} • {order.customer?.firstName} {order.customer?.lastName}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-black text-zinc-900">₹{order.total}</div>
+                        <div className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md inline-block mt-1 ${order.isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                          {order.isPaid ? 'PAID' : 'PENDING'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {orders.length > 5 && (
+                    <button 
+                      onClick={() => setMainSection('orders')}
+                      className="text-xs font-bold text-amber-600 hover:text-amber-700 pt-2"
+                    >
+                      View all {orders.length} orders →
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* ================= CATEGORIES SECTION ================= */}
         {mainSection === 'categories' && (
