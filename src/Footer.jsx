@@ -120,13 +120,13 @@ export default function Footer({ navigateTo }) {
           </div>
 
           {/* Copyright */}
-          <div className="mt-8 md:mt-20 md:pt-8 md:border-t md:border-zinc-100 flex flex-col items-center gap-3 md:gap-4">
-            <div className="flex items-center gap-2">
+          <div className="mt-8 md:mt-20 md:pt-8 md:border-t md:border-zinc-100 flex flex-col items-center justify-center text-center gap-3 md:gap-4 w-full">
+            <div className="flex items-center justify-center gap-2">
               <img alt="Pravar Wraps" className="h-6 w-6 md:h-6 md:w-6 object-cover rounded-full" src="/images/logo-mark-ayXhBs9R.png" />
               <span className="font-coolvetica font-black text-[15px] md:text-sm text-zinc-950 tracking-wider uppercase">PRAVAR WRAPS</span>
             </div>
-            <p className="text-[13px] md:text-[10px] text-zinc-400 font-medium">
-              Copyright © 2026. All rights reserved by www.pravarwraps.com
+            <p className="text-[13px] md:text-[10px] text-zinc-400 font-medium text-center leading-relaxed">
+              Copyright © 2026. All rights reserved by <br className="sm:hidden" /> www.pravarwraps.com
             </p>
           </div>
         </div>

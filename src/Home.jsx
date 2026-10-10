@@ -143,10 +143,10 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
         {popularProducts.length > 0 && (
           <section className="mt-14 mb-14">
             <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mb-6 text-center uppercase tracking-wide">Trending Now</h2>
-            <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
               {popularProducts.map((prod) => (
-                <div key={prod.id} className="w-[46%] sm:w-[220px] shrink-0 snap-start">
                   <div
+                    key={prod.id}
                     className="group bg-white border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-lg transition-all rounded-2xl overflow-hidden flex flex-col cursor-pointer"
                     onClick={() => onSelectProduct && onSelectProduct(prod)}
                   >
@@ -163,7 +163,6 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
                       </div>
                     </div>
                   </div>
-                </div>
               ))}
             </div>
           </section>
@@ -177,10 +176,10 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
           return (
             <section key={category.id} className="mt-14 mb-14">
               <h2 className="text-xl sm:text-2xl font-black text-zinc-900 mb-6 text-left uppercase tracking-wide">{category.title}</h2>
-              <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
                 {categoryProducts.map((prod) => (
-                  <div key={prod.id} className="w-[46%] sm:w-[220px] shrink-0 snap-start">
                     <div
+                      key={prod.id}
                       className="group bg-white border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-lg transition-all rounded-2xl overflow-hidden flex flex-col cursor-pointer h-full"
                       onClick={() => onSelectProduct && onSelectProduct(prod)}
                     >
@@ -197,7 +196,6 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
                         </div>
                       </div>
                     </div>
-                  </div>
                 ))}
               </div>
             </section>
