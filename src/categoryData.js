@@ -1,22 +1,38 @@
 // Category and Product Data Management with Backend API Sync (localhost:8081)
 
-export const DEFAULT_CATEGORIES = [];
-export const DEFAULT_PRODUCTS = [];
+export const DEFAULT_CATEGORIES = [
+  { id: 'cat_magic', title: 'Magic Cases', slug: 'magic-cases', image: '/images/logo-mark-ayXhBs9R.png' },
+  { id: 'cat_acrylic', title: 'Customized Photo Acrylic Strong Glass Cases', slug: 'acrylic-glass', image: '/images/logo-mark-ayXhBs9R.png' },
+  { id: 'cat_gold', title: 'Customized Photo Gold Glass Cases', slug: 'gold-glass', image: '/images/logo-mark-ayXhBs9R.png' },
+  { id: 'cat_premium', title: 'Customized Photo Premium Glass Cases', slug: 'premium-glass', image: '/images/logo-mark-ayXhBs9R.png' }
+];
+export const DEFAULT_PRODUCTS = [
+  { id: 'prod_magic_1', categoryId: 'cat_magic', title: 'Magic Case Example', price: 499, off: '50% off', oldPrice: 999, badge: 'SALE', image: '/images/logo-mark-ayXhBs9R.png' },
+  { id: 'prod_acrylic_1', categoryId: 'cat_acrylic', title: 'Acrylic Glass Example', price: 499, off: '50% off', oldPrice: 999, badge: 'SALE', image: '/images/logo-mark-ayXhBs9R.png' },
+  { id: 'prod_gold_1', categoryId: 'cat_gold', title: 'Gold Glass Example', price: 499, off: '38% off', oldPrice: 799, badge: 'SALE', image: '/images/logo-mark-ayXhBs9R.png' },
+  { id: 'prod_premium_1', categoryId: 'cat_premium', title: 'Premium Glass Example', price: 599, off: '40% off', oldPrice: 999, badge: 'SALE', image: '/images/logo-mark-ayXhBs9R.png' }
+];
 
 const API_BASE = 'https://ecom-back-kwol.onrender.com/api';
 
 // Helper functions for categories (synchronous cache read)
 export function getStoredCategories() {
   try {
-    const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
+    let custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
     const deletedIds = JSON.parse(localStorage.getItem('deleted_category_ids') || '[]');
     const editedMap = JSON.parse(localStorage.getItem('edited_categories') || '{}');
+
+    // Seed default categories if none exist and none were deleted
+    if (custom.length === 0 && deletedIds.length === 0) {
+      custom = DEFAULT_CATEGORIES;
+      localStorage.setItem('custom_categories', JSON.stringify(custom));
+    }
 
     return custom
       .filter(cat => !deletedIds.includes(cat.id))
       .map(cat => editedMap[cat.id] ? { ...cat, ...editedMap[cat.id] } : cat);
   } catch (e) {
-    return [];
+    return DEFAULT_CATEGORIES;
   }
 }
 
@@ -110,9 +126,15 @@ export async function deleteStoredCategory(id) {
 // Helper functions for products (synchronous cache read)
 export function getStoredProducts(categoryId = null) {
   try {
-    const custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
+    let custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
     const deletedIds = JSON.parse(localStorage.getItem('deleted_product_ids') || '[]');
     const editedMap = JSON.parse(localStorage.getItem('edited_products') || '{}');
+
+    // Seed default products if none exist and none were deleted
+    if (custom.length === 0 && deletedIds.length === 0) {
+      custom = DEFAULT_PRODUCTS;
+      localStorage.setItem('custom_products', JSON.stringify(custom));
+    }
 
     const active = custom
       .filter(prod => !deletedIds.includes(prod.id))
@@ -123,7 +145,7 @@ export function getStoredProducts(categoryId = null) {
     }
     return active;
   } catch (e) {
-    return [];
+    return DEFAULT_PRODUCTS;
   }
 }
 

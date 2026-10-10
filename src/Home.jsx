@@ -6,18 +6,24 @@ import heroVideo from './assets/watermark-removed (1).mp4';
 export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct }) {
   const [categories, setCategories] = useState(getStoredCategories());
   const [popularProducts, setPopularProducts] = useState(getStoredProducts().slice(0, 8));
+  const [allProducts, setAllProducts] = useState(getStoredProducts());
 
   useEffect(() => {
     // 1. Initial cached state
     setCategories(getStoredCategories());
-    setPopularProducts(getStoredProducts().slice(0, 8));
+    const cachedProds = getStoredProducts();
+    setAllProducts(cachedProds);
+    setPopularProducts(cachedProds.slice(0, 8));
 
     // 2. Fetch live data from server
     fetchCategoriesFromApi().then(cats => {
       if (Array.isArray(cats)) setCategories(cats);
     });
     fetchProductsFromApi().then(prods => {
-      if (Array.isArray(prods)) setPopularProducts(prods.slice(0, 8));
+      if (Array.isArray(prods)) {
+        setAllProducts(prods);
+        setPopularProducts(prods.slice(0, 8));
+      }
     });
   }, []);
 
@@ -88,8 +94,8 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
               type="button"
               className="text-xs sm:text-sm font-bold text-zinc-900 border border-zinc-200 rounded-full px-3 py-1.5 hover:bg-zinc-50 whitespace-nowrap cursor-pointer"
               onClick={() => {
-                if (onSelectCategory && categories.length > 0) {
-                  onSelectCategory(categories[0]);
+                if (onSelectCategory) {
+                  onSelectCategory('all');
                 } else if (setCurrentPage) {
                   setCurrentPage('collection');
                 }
@@ -136,7 +142,7 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
 
         {popularProducts.length > 0 && (
           <section className="mt-14 mb-14">
-            <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mb-6 text-center uppercase tracking-wide">Popular Products</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mb-6 text-center uppercase tracking-wide">Trending Now</h2>
             <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
               {popularProducts.map((prod) => (
                 <div key={prod.id} className="w-[46%] sm:w-[220px] shrink-0 snap-start">
@@ -162,6 +168,41 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
             </div>
           </section>
         )}
+
+        {/* Categories Sections (Trending Now, TVK, Thala Ajith, etc.) */}
+        {categories.map((category) => {
+          const categoryProducts = allProducts.filter(p => p.categoryId === category.id);
+          if (categoryProducts.length === 0) return null;
+
+          return (
+            <section key={category.id} className="mt-14 mb-14">
+              <h2 className="text-xl sm:text-2xl font-black text-zinc-900 mb-6 text-left uppercase tracking-wide">{category.title}</h2>
+              <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
+                {categoryProducts.map((prod) => (
+                  <div key={prod.id} className="w-[46%] sm:w-[220px] shrink-0 snap-start">
+                    <div
+                      className="group bg-white border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-lg transition-all rounded-2xl overflow-hidden flex flex-col cursor-pointer h-full"
+                      onClick={() => onSelectProduct && onSelectProduct(prod)}
+                    >
+                      <div className="relative bg-zinc-50/40 flex items-center justify-center aspect-[5/6] overflow-hidden rounded-t-2xl p-3">
+                        <span className="absolute top-2 left-2 z-10 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">{prod.badge || 'Sale'}</span>
+                        <img alt={prod.title} className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply" src={prod.image} />
+                      </div>
+                      <div className="p-2 sm:p-4 text-center flex-1 flex flex-col justify-between">
+                        <h3 className="text-xs sm:text-sm text-zinc-900 font-bold break-words whitespace-normal line-clamp-2">{prod.title}</h3>
+                        <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 mt-2">
+                          <span className="text-zinc-900 font-black text-sm sm:text-base">₹{prod.price}</span>
+                          {prod.oldPrice && <span className="text-zinc-400 text-[10px] sm:text-xs line-through">₹{prod.oldPrice}</span>}
+                          {prod.off && <span className="text-green-600 text-[10px] sm:text-xs font-semibold">{prod.off}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </main>
   );

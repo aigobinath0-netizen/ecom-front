@@ -23,14 +23,18 @@ export default function Collection({
     setCategories(cachedCats);
 
     let active = null;
-    if (selectedCategory) {
+    if (selectedCategory === 'all') {
+      active = 'all';
+    } else if (selectedCategory) {
       active = cachedCats.find(c => c.id === selectedCategory.id || c.slug === selectedCategory.slug) || selectedCategory;
     } else if (cachedCats.length > 0) {
       active = cachedCats[0];
     }
     setCurrentCat(active);
 
-    if (active) {
+    if (active === 'all') {
+      setProducts([]);
+    } else if (active) {
       setProducts(getStoredProducts(active.id));
     } else {
       setProducts(getStoredProducts());
@@ -43,8 +47,12 @@ export default function Collection({
         if (Array.isArray(liveCats) && liveCats.length > 0) {
           setCategories(liveCats);
           let liveActive = null;
-          if (selectedCategory) {
+          if (selectedCategory === 'all') {
+            liveActive = 'all';
+          } else if (selectedCategory) {
             liveActive = liveCats.find(c => c.id === selectedCategory.id || c.slug === selectedCategory.slug) || selectedCategory;
+          } else if (active === 'all') {
+            liveActive = 'all';
           } else if (active) {
             liveActive = liveCats.find(c => c.id === active.id) || liveCats[0];
           } else {
@@ -52,7 +60,9 @@ export default function Collection({
           }
           setCurrentCat(liveActive);
 
-          if (liveActive) {
+          if (liveActive === 'all') {
+            setProducts([]);
+          } else if (liveActive) {
             const liveProds = await fetchProductsFromApi(liveActive.id);
             if (Array.isArray(liveProds)) setProducts(liveProds);
           }
@@ -126,7 +136,7 @@ export default function Collection({
           <ChevronRight className="w-3 h-3 text-zinc-400" />
           <span className="text-zinc-400">Collections</span>
           <ChevronRight className="w-3 h-3 text-zinc-400" />
-          <span className="text-zinc-900 font-bold">{currentCat?.title}</span>
+          <span className="text-zinc-900 font-bold">{currentCat === 'all' ? 'All Categories' : currentCat?.title}</span>
         </div>
 
         {/* Category Hero Frame / Banner (Tight wrap matching exact 1600x800 / 2:1 pixel aspect ratio with no outside gaps) */}
@@ -144,34 +154,53 @@ export default function Collection({
         {/* Category Title & Product Count */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">
-            {currentCat?.title}
+            {currentCat === 'all' ? 'All Categories' : currentCat?.title}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1 font-medium">
-            Showing {products.length} premium mobile cases & covers
-          </p>
+          {currentCat !== 'all' && (
+            <p className="text-xs sm:text-sm text-zinc-500 mt-1 font-medium">
+              Showing {products.length} premium mobile cases & covers
+            </p>
+          )}
         </div>
 
         {/* Horizontal Category Switcher Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none border-b border-zinc-100 mb-8">
-          {categories.map((cat) => {
-            const isSelected = currentCat?.id === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => handleSelectCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${isSelected
-                    ? 'bg-zinc-950 text-white shadow-md'
-                    : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200'
-                  }`}
-              >
-                {cat.title}
-              </button>
-            );
-          })}
-        </div>
+        {currentCat !== 'all' && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none border-b border-zinc-100 mb-8">
+            {categories.map((cat) => {
+              const isSelected = currentCat?.id === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleSelectCategory(cat)}
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${isSelected
+                      ? 'bg-zinc-950 text-white shadow-md'
+                      : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200'
+                    }`}
+                >
+                  {cat.title}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Product Grid - Customer View */}
-        {products.length > 0 ? (
+        {currentCat === 'all' ? (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
+            {categories.map((cat, idx) => (
+              <div
+                key={cat.id || idx}
+                className="group flex flex-col items-center cursor-pointer"
+                onClick={() => handleSelectCategory(cat)}
+              >
+                <div className="aspect-square w-full overflow-hidden rounded-2xl bg-white shadow-sm border border-zinc-200 group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/40 transition-all p-3 flex items-center justify-center">
+                  <img alt={cat.title} className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply" src={cat.image} />
+                </div>
+                <span className="mt-3 text-[11px] sm:text-sm font-bold leading-snug text-center text-zinc-700 group-hover:text-amber-500 transition-colors line-clamp-2">{cat.title}</span>
+              </div>
+            ))}
+          </div>
+        ) : products.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {products.map((prod) => (
               <div
