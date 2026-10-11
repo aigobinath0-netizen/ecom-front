@@ -126,8 +126,17 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
               }}
               className="group bg-[#f4f4f5] hover:bg-zinc-100/90 border border-zinc-200/70 rounded-2xl p-4 sm:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
             >
-              {/* Top Text Details (Compact) */}
-              <div>
+              {/* Centered Phone Case Mockup (Top) */}
+              <div className="w-full h-36 sm:h-44 flex items-center justify-center overflow-hidden">
+                <img
+                  alt={cat.title}
+                  className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+                  src={cat.image}
+                />
+              </div>
+
+              {/* Category Details Under Image */}
+              <div className="w-full mt-3 text-center flex flex-col items-center">
                 <span className="text-[#ea580c] text-[10px] font-black uppercase tracking-wider block mb-1">
                   NEW
                 </span>
@@ -141,20 +150,11 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
                   ₹ 499/- Onwards
                 </p>
 
-                <div className="mt-2.5">
-                  <span className="inline-block text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-black text-white group-hover:bg-zinc-800 transition-colors shadow-xs">
+                <div className="mt-3 flex justify-center w-full">
+                  <span className="inline-block text-[11px] font-bold px-4 py-1.5 rounded-full bg-black text-white group-hover:bg-zinc-800 transition-colors shadow-xs">
                     Shop Now
                   </span>
                 </div>
-              </div>
-
-              {/* Centered Phone Case Mockup (Seamless Multiply Blend) */}
-              <div className="w-full h-32 sm:h-40 mt-3 flex items-center justify-center overflow-hidden">
-                <img
-                  alt={cat.title}
-                  className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
-                  src={cat.image}
-                />
               </div>
             </div>
           ))}
