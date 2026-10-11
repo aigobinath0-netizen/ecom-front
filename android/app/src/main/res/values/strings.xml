@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pravar Wraps</string>
+    <string name="title_activity_main">Pravar Wraps</string>
+    <string name="package_name">com.pravarwraps.app</string>
+    <string name="custom_url_scheme">com.pravarwraps.app</string>
+</resources>

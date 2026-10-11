@@ -5,7 +5,7 @@ export default function Reviews() {
   const [reviews, setReviews] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [stories, setStories] = useState([]);
-  
+
   // Story viewer state
   const [activeStoryIndex, setActiveStoryIndex] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -47,7 +47,7 @@ export default function Reviews() {
           .map(r => editedReviews[r.id] ? { ...r, ...editedReviews[r.id] } : r);
         setReviews(activeLocal);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchStories = async () => {
@@ -126,7 +126,7 @@ export default function Reviews() {
   }, []);
 
   const currentStory = activeStoryIndex !== null ? stories[activeStoryIndex] : null;
-  const currentImages = currentStory 
+  const currentImages = currentStory
     ? (Array.isArray(currentStory.images) && currentStory.images.length > 0 ? currentStory.images : [currentStory.img])
     : [];
   const currentImage = currentImages[activeImageIndex] || '';
@@ -243,7 +243,7 @@ export default function Reviews() {
       try {
         const local = JSON.parse(localStorage.getItem('custom_reviews') || '[]');
         localStorage.setItem('custom_reviews', JSON.stringify([{ ...newReview, verified: false, id: 'local-' + Date.now() }, ...local]));
-      } catch (err) {}
+      } catch (err) { }
       setIsModalOpen(false);
       setNewReview({ author: '', title: '', text: '', rating: 5 });
       fetchReviews();
@@ -252,8 +252,8 @@ export default function Reviews() {
 
 
 
-  const avgRating = reviews.length > 0 
-    ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1) 
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1)
     : '5.0';
 
   return (
@@ -261,7 +261,7 @@ export default function Reviews() {
       <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-center text-zinc-900 uppercase tracking-wide mb-6">
         What Our Customers Say
       </h1>
-      
+
       {/* Rating Summary */}
       <div className="flex justify-center mb-10">
         <div className="flex items-center gap-6 border border-zinc-200 rounded-2xl p-4 sm:px-8 shadow-sm">
@@ -292,9 +292,9 @@ export default function Reviews() {
               const storyImg = story.img || (story.images && story.images[0]) || '';
               const count = Array.isArray(story.images) ? story.images.length : 1;
               return (
-                <div 
-                  key={i} 
-                  onClick={() => openStory(i)} 
+                <div
+                  key={i}
+                  onClick={() => openStory(i)}
                   className="flex flex-col items-center gap-2 shrink-0 snap-start cursor-pointer group"
                 >
                   <div className="relative p-[2.5px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 group-hover:scale-105 group-hover:shadow-md transition-all">
@@ -323,7 +323,7 @@ export default function Reviews() {
 
       {/* Write a Review Button */}
       <div className="flex justify-center mb-10">
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-bold transition-colors">
           <Star className="w-4 h-4 fill-white" />
@@ -363,7 +363,7 @@ export default function Reviews() {
                 </div>
                 {review.title && <h3 className="text-sm font-bold text-zinc-900 mb-2">{review.title}</h3>}
                 {review.text && <p className="text-sm text-zinc-700 mb-4 leading-relaxed">{review.text}</p>}
-                
+
                 <div className="flex items-center justify-between mt-4">
                   <span className="text-sm font-bold text-zinc-900">{review.author}</span>
                   {review.verified && (
@@ -393,7 +393,7 @@ export default function Reviews() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 relative">
-            <button 
+            <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900"
             >
@@ -403,20 +403,20 @@ export default function Reviews() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-semibold text-zinc-700 mb-1">Name</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   value={newReview.author}
-                  onChange={e => setNewReview({...newReview, author: e.target.value})}
+                  onChange={e => setNewReview({ ...newReview, author: e.target.value })}
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-zinc-700 mb-1">Rating</label>
-                <select 
+                <select
                   className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   value={newReview.rating}
-                  onChange={e => setNewReview({...newReview, rating: parseInt(e.target.value)})}
+                  onChange={e => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
                 >
                   <option value={5}>5 Stars</option>
                   <option value={4}>4 Stars</option>
@@ -427,24 +427,24 @@ export default function Reviews() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-zinc-700 mb-1">Title</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   value={newReview.title}
-                  onChange={e => setNewReview({...newReview, title: e.target.value})}
+                  onChange={e => setNewReview({ ...newReview, title: e.target.value })}
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-zinc-700 mb-1">Review</label>
-                <textarea 
+                <textarea
                   required
                   rows={4}
                   className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   value={newReview.text}
-                  onChange={e => setNewReview({...newReview, text: e.target.value})}
+                  onChange={e => setNewReview({ ...newReview, text: e.target.value })}
                 />
               </div>
-              <button 
+              <button
                 type="submit"
                 className="mt-2 bg-zinc-950 text-white font-bold py-3 rounded-xl hover:bg-zinc-800 transition-colors"
               >
@@ -457,14 +457,14 @@ export default function Reviews() {
 
       {/* Full-Screen Instagram / WhatsApp Style Story Viewer Modal */}
       {currentStory && (
-        <div 
+        <div
           onClick={(e) => {
             if (e.target === e.currentTarget) closeStory();
           }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md select-none p-2 sm:p-4 animate-in fade-in duration-200"
         >
           {/* Main Story Container (Phone card format) */}
-          <div 
+          <div
             className="relative w-full max-w-[420px] h-[88vh] max-h-[760px] min-h-[520px] bg-[#0b141a] rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] border border-white/10 flex flex-col justify-between"
             onMouseDown={() => setIsPaused(true)}
             onMouseUp={() => setIsPaused(false)}
@@ -477,13 +477,13 @@ export default function Reviews() {
               <div className="flex items-center gap-1.5 mb-2.5">
                 {currentImages.map((_, idx) => (
                   <div key={idx} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm">
-                    <div 
+                    <div
                       className="h-full bg-white rounded-full transition-all duration-75"
                       style={{
-                        width: idx < activeImageIndex 
-                          ? '100%' 
-                          : idx === activeImageIndex 
-                            ? `${progress}%` 
+                        width: idx < activeImageIndex
+                          ? '100%'
+                          : idx === activeImageIndex
+                            ? `${progress}%`
                             : '0%'
                       }}
                     />
@@ -495,10 +495,10 @@ export default function Reviews() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full ring-2 ring-white/30 overflow-hidden shrink-0 shadow-md bg-zinc-800">
-                    <img 
-                      src={currentStory.img || currentImages[0]} 
-                      alt={currentStory.name} 
-                      className="w-full h-full object-cover" 
+                    <img
+                      src={currentStory.img || currentImages[0]}
+                      alt={currentStory.name}
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex flex-col">
@@ -516,7 +516,7 @@ export default function Reviews() {
 
                 {/* Header Actions: Pause/Play + White Circle Close Button */}
                 <div className="flex items-center gap-1.5">
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsPaused(prev => !prev);
@@ -527,7 +527,7 @@ export default function Reviews() {
                     {isPaused ? <Play className="w-4 h-4 fill-white" /> : <Pause className="w-4 h-4" />}
                   </button>
 
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       closeStory();
@@ -545,7 +545,7 @@ export default function Reviews() {
             <div className="relative w-full h-full flex items-center justify-center bg-black overflow-hidden">
               {/* Ambient Blurred Background for immersive feel */}
               {currentImage && (
-                <div 
+                <div
                   className="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-25 scale-125 pointer-events-none"
                   style={{ backgroundImage: `url(${currentImage})` }}
                 />
@@ -553,10 +553,10 @@ export default function Reviews() {
 
               {/* Story Image */}
               {currentImage ? (
-                <img 
+                <img
                   key={currentImage}
-                  src={currentImage} 
-                  alt={`${currentStory.name} - slide ${activeImageIndex + 1}`} 
+                  src={currentImage}
+                  alt={`${currentStory.name} - slide ${activeImageIndex + 1}`}
                   className="w-full h-full object-contain relative z-10 select-none pointer-events-none transition-opacity duration-150"
                 />
               ) : (
@@ -564,27 +564,27 @@ export default function Reviews() {
               )}
 
               {/* Tap Zones: Left 35% goes previous, Right 65% goes next */}
-              <div 
+              <div
                 onClick={(e) => {
                   e.stopPropagation();
                   goToPrevImage();
                 }}
-                className="absolute top-0 bottom-0 left-0 w-[35%] z-20 cursor-pointer" 
+                className="absolute top-0 bottom-0 left-0 w-[35%] z-20 cursor-pointer"
                 title="Previous image"
               />
-              <div 
+              <div
                 onClick={(e) => {
                   e.stopPropagation();
                   goToNextImage();
                 }}
-                className="absolute top-0 bottom-0 right-0 w-[65%] z-20 cursor-pointer" 
+                className="absolute top-0 bottom-0 right-0 w-[65%] z-20 cursor-pointer"
                 title="Next image"
               />
             </div>
 
             {/* Left Circular Navigation Arrow Button (<) */}
             {(activeStoryIndex > 0 || activeImageIndex > 0) && (
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   goToPrevImage();
@@ -597,7 +597,7 @@ export default function Reviews() {
             )}
 
             {/* Right Circular Navigation Arrow Button (>) */}
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 goToNextImage();

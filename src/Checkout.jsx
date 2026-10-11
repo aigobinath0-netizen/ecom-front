@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Heart, 
-  Users, 
-  Star, 
-  Zap, 
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ShieldCheck,
+  Heart,
+  Users,
+  Star,
+  Zap,
   Lock,
   MessageCircle,
   ShoppingBag,
   CreditCard
 } from 'lucide-react';
 
-export default function Checkout({ 
-  cart, 
-  clearCart, 
-  setCurrentPage 
+export default function Checkout({
+  cart,
+  clearCart,
+  setCurrentPage
 }) {
   const [formData, setFormData] = useState({
     country: 'India',
@@ -40,7 +40,7 @@ export default function Checkout({
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) || 499) * item.quantity, 0);
-  
+
   // Free shipping in Tamil Nadu, ₹49 elsewhere
   const isTN = formData.state === 'Tamil Nadu';
   const shippingCharge = subtotal > 0 ? (isTN ? 0 : 49) : 0;
@@ -110,7 +110,7 @@ export default function Checkout({
         existingOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
         if (!Array.isArray(existingOrders)) existingOrders = [];
       } catch (parseErr) {
-        existingOrders = []; 
+        existingOrders = [];
       }
       // Revert items and customer back to objects for local storage
       const localOrder = { ...placedOrder, items: [...cart], customer: { ...formData } };
@@ -238,7 +238,7 @@ export default function Checkout({
           {/* Card 2: 59K+ Instagram Followers */}
           <div className="bg-pink-50/70 border border-pink-100 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
             </div>
             <div>
               <div className="text-xs sm:text-sm font-extrabold text-zinc-900 leading-tight">59K+</div>
@@ -309,9 +309,8 @@ export default function Checkout({
                       value={formData.lastName}
                       onChange={handleChange}
                       placeholder="Last name"
-                      className={`w-full bg-white border rounded-xl px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${
-                        errors.lastName ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
-                      }`}
+                      className={`w-full bg-white border rounded-xl px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${errors.lastName ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
+                        }`}
                     />
                     {errors.lastName && <p className="text-[11px] text-rose-500 mt-1 font-semibold">{errors.lastName}</p>}
                   </div>
@@ -325,9 +324,8 @@ export default function Checkout({
                     value={formData.address}
                     onChange={handleChange}
                     placeholder="Address"
-                    className={`w-full bg-white border rounded-xl px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${
-                      errors.address ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
-                    }`}
+                    className={`w-full bg-white border rounded-xl px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${errors.address ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
+                      }`}
                   />
                   {errors.address && <p className="text-[11px] text-rose-500 mt-1 font-semibold">{errors.address}</p>}
                 </div>
@@ -354,9 +352,8 @@ export default function Checkout({
                       onChange={handleChange}
                       placeholder="PIN code"
                       maxLength={6}
-                      className={`w-full bg-white border rounded-xl px-3 sm:px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${
-                        errors.pincode ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
-                      }`}
+                      className={`w-full bg-white border rounded-xl px-3 sm:px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${errors.pincode ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
+                        }`}
                     />
                     {errors.pincode && <p className="text-[10px] text-rose-500 mt-1 font-semibold">{errors.pincode}</p>}
                   </div>
@@ -368,9 +365,8 @@ export default function Checkout({
                       value={formData.city}
                       onChange={handleChange}
                       placeholder="City"
-                      className={`w-full bg-white border rounded-xl px-3 sm:px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${
-                        errors.city ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
-                      }`}
+                      className={`w-full bg-white border rounded-xl px-3 sm:px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${errors.city ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
+                        }`}
                     />
                     {errors.city && <p className="text-[10px] text-rose-500 mt-1 font-semibold">{errors.city}</p>}
                   </div>
@@ -403,9 +399,8 @@ export default function Checkout({
                     onChange={handleChange}
                     placeholder="Phone"
                     maxLength={10}
-                    className={`w-full bg-white border rounded-xl px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${
-                      errors.phone ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
-                    }`}
+                    className={`w-full bg-white border rounded-xl px-4 py-3.5 text-sm text-zinc-800 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm placeholder:text-zinc-400 ${errors.phone ? 'border-rose-500 bg-rose-50/20' : 'border-zinc-200'
+                      }`}
                   />
                   {errors.phone && <p className="text-[11px] text-rose-500 mt-1 font-semibold">{errors.phone}</p>}
                 </div>
@@ -540,7 +535,7 @@ export default function Checkout({
                   title="Instagram Reviews"
                   className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
                 </a>
                 <a
                   href="https://wa.me/919876543210?text=Hello%20PRAVAR%20WRAPS!%20I%20have%20a%20doubt%20about%20ordering."
@@ -568,10 +563,10 @@ export default function Checkout({
                   <div key={item.id} className="flex items-center gap-4">
                     {/* Thumbnail with Quantity Badge */}
                     <div className="relative w-16 aspect-[3/4] bg-white border border-zinc-200 rounded-xl p-1 shrink-0 flex items-center justify-center">
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
-                        className="w-full h-full object-contain mix-blend-multiply" 
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-contain mix-blend-multiply"
                       />
                       <span className="absolute -top-2 -right-2 bg-zinc-700 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-white">
                         {item.quantity}

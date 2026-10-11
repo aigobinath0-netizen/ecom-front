@@ -172,10 +172,11 @@ export default function Collection({
                 <button
                   key={cat.id}
                   onClick={() => handleSelectCategory(cat)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${isSelected
-                      ? 'bg-zinc-950 text-white shadow-md'
-                      : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200'
-                    }`}
+                  className={`whitespace-nowrap px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-black text-white shadow-sm'
+                      : 'bg-[#f4f4f5] hover:bg-zinc-200 text-zinc-700'
+                  }`}
                 >
                   {cat.title}
                 </button>
@@ -184,65 +185,71 @@ export default function Collection({
           </div>
         )}
 
-        {/* Product Grid - Customer View */}
+        {/* Product Grid - Customer View (Matching Screenshot 2) */}
         {currentCat === 'all' ? (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {categories.map((cat, idx) => (
               <div
                 key={cat.id || idx}
-                className="group flex flex-col items-center cursor-pointer"
+                className="group flex flex-col cursor-pointer"
                 onClick={() => handleSelectCategory(cat)}
               >
-                <div className="aspect-square w-full overflow-hidden rounded-2xl bg-white shadow-sm border border-zinc-200 group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/40 transition-all p-3 flex items-center justify-center">
-                  <img alt={cat.title} className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply" src={cat.image} />
+                <div className="aspect-square w-full overflow-hidden rounded-lg bg-[#f4f4f5] p-4 flex items-center justify-center">
+                  <img alt={cat.title} className="w-full h-full object-contain group-hover:scale-105 transition duration-300" src={cat.image} />
                 </div>
-                <span className="mt-3 text-[11px] sm:text-sm font-bold leading-snug text-center text-zinc-700 group-hover:text-amber-500 transition-colors line-clamp-2">{cat.title}</span>
+                <div className="pt-3 text-center">
+                  <h3 className="text-xs sm:text-sm font-medium text-zinc-900 line-clamp-1">{cat.title}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">Explore Collection &rarr;</p>
+                </div>
               </div>
             ))}
           </div>
         ) : products.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {products.map((prod) => (
+            {products.map((prod, idx) => (
               <div
                 key={prod.id}
                 onClick={() => onSelectProduct && onSelectProduct(prod)}
-                className="group bg-white border border-zinc-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden flex flex-col cursor-pointer"
+                className="group flex flex-col cursor-pointer"
               >
-                {/* Product Image Box */}
-                <div className="relative bg-zinc-50/60 aspect-[5/6] p-3 flex items-center justify-center overflow-hidden">
-                  {/* SALE Badge */}
-                  <span className="absolute top-2.5 left-2.5 z-10 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md">
-                    {prod.badge || 'SALE'}
-                  </span>
+                {/* Product Image Box Matching Screenshot 2 */}
+                <div className="relative bg-[#f4f4f5] aspect-[4/5] p-4 flex items-center justify-center overflow-hidden rounded-lg">
+                  {/* Badge: Green NEW or Gold BEST SELLER */}
+                  <div className="absolute top-2.5 left-2.5 z-10">
+                    {idx % 2 === 0 ? (
+                      <span className="bg-[#16a34a] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs">
+                        NEW
+                      </span>
+                    ) : (
+                      <span className="bg-[#ca8a04] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs">
+                        BEST SELLER
+                      </span>
+                    )}
+                  </div>
 
                   <img
                     alt={prod.title}
                     src={prod.image}
-                    className="w-full h-full object-contain group-hover:scale-110 transition duration-300 mix-blend-multiply"
+                    className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
                   />
                 </div>
 
                 {/* Details Section */}
-                <div className="p-3.5 sm:p-4 text-center flex flex-col flex-1 justify-between">
-                  <h3 className="text-xs sm:text-sm text-zinc-900 font-bold break-words line-clamp-2 min-h-[36px] group-hover:text-amber-600 transition-colors">
+                <div className="pt-3 text-center">
+                  <h3 className="text-xs sm:text-sm font-medium text-zinc-900 group-hover:text-black line-clamp-1">
                     {prod.title}
                   </h3>
 
-                  <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 mt-2 pt-1 border-t border-zinc-50">
-                    <span className="text-zinc-950 font-black text-sm sm:text-base">
-                      ₹{prod.price}
-                    </span>
-                    {prod.oldPrice && (
-                      <span className="text-zinc-400 text-[11px] sm:text-xs line-through font-medium">
-                        ₹{prod.oldPrice}
-                      </span>
-                    )}
-                    {prod.off && (
-                      <span className="text-green-600 text-[11px] sm:text-xs font-bold">
-                        {prod.off}
-                      </span>
-                    )}
+                  {/* Gold Star Rating */}
+                  <div className="flex items-center justify-center gap-1 mt-1 text-[#f59e0b] text-xs">
+                    <span>★★★★★</span>
+                    <span className="text-zinc-400 text-[11px] font-normal">(24)</span>
                   </div>
+
+                  {/* Price in clean black text */}
+                  <p className="text-xs sm:text-sm font-semibold text-zinc-950 mt-1">
+                    from Rs. {prod.price}.00
+                  </p>
                 </div>
               </div>
             ))}

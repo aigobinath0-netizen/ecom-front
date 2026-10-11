@@ -1,21 +1,21 @@
 import React from 'react';
-import { 
-  ArrowLeft, 
-  Trash2, 
-  ShieldCheck, 
-  Lock, 
-  Sparkles, 
+import {
+  ArrowLeft,
+  Trash2,
+  ShieldCheck,
+  Lock,
+  Sparkles,
   ShoppingBag,
   Star,
   CheckCircle2
 } from 'lucide-react';
 
-export default function Cart({ 
-  cart, 
-  updateQuantity, 
-  removeFromCart, 
-  clearCart, 
-  setCurrentPage 
+export default function Cart({
+  cart,
+  updateQuantity,
+  removeFromCart,
+  clearCart,
+  setCurrentPage
 }) {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) || 499) * item.quantity, 0);
@@ -125,16 +125,16 @@ export default function Cart({
             {/* Left Column: Cart Items List */}
             <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4">
               {cart.map((item) => (
-                <div 
+                <div
                   key={item.id}
                   className="bg-white border border-zinc-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex gap-4 sm:gap-6 items-center shadow-sm hover:shadow-md transition-shadow relative"
                 >
                   {/* Product Thumbnail */}
                   <div className="w-20 sm:w-24 aspect-[3/4] bg-zinc-50 border border-zinc-100 rounded-xl sm:rounded-2xl flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
-                    <img 
-                      src={item.image} 
-                      alt={item.title} 
-                      className="w-full h-full object-contain mix-blend-multiply" 
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-contain mix-blend-multiply"
                     />
                   </div>
 
@@ -243,11 +243,11 @@ export default function Cart({
                   </div>
                 </div>
 
-                {/* Proceed to Checkout Button - Golden Yellow Gradient */}
+                {/* Proceed to Checkout Button - Sleek Black Luxury */}
                 <button
                   type="button"
                   onClick={() => setCurrentPage('checkout')}
-                  className="w-full mt-6 bg-gradient-to-r from-amber-400 via-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-zinc-950 font-black py-4 rounded-full text-center transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer text-sm sm:text-base tracking-wide"
+                  className="w-full mt-6 bg-black hover:bg-zinc-800 text-white font-bold py-4 rounded-full text-center transition-all duration-200 shadow-sm cursor-pointer text-sm sm:text-base tracking-wide"
                 >
                   Proceed to Checkout
                 </button>
@@ -282,15 +282,15 @@ export default function Cart({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {customerReviews.map((rev, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="bg-white border border-zinc-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col"
               >
                 <div className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-50 mb-3 border border-zinc-100">
-                  <img 
-                    src={rev.img} 
-                    alt={rev.name} 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={rev.img}
+                    alt={rev.name}
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="flex items-center gap-1 text-amber-400 mb-2">

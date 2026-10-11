@@ -27,14 +27,14 @@ const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
 
   return (
     <div className="relative w-full mb-3" ref={dropdownRef}>
-      <div 
+      <div
         onClick={() => setIsOpen(!isOpen)}
         className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-sm text-zinc-700 focus:outline-none focus:border-zinc-900 shadow-sm font-medium cursor-pointer flex justify-between items-center"
       >
         <span>{value || "-- Choose your phone model --"}</span>
         <ChevronDown size={18} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </div>
-      
+
       {isOpen && (
         <div className="absolute z-50 w-full top-full mt-2 left-0 bg-white border border-zinc-200 rounded-xl shadow-xl max-h-[350px] flex flex-col overflow-hidden">
           <div className="p-3 border-b border-zinc-100 shrink-0 bg-white">
@@ -58,18 +58,17 @@ const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
                     {brand} ({models.length})
                   </div>
                   {models.map(model => (
-                    <div 
+                    <div
                       key={model}
                       onClick={() => {
                         onChange(model);
                         setIsOpen(false);
                         setSearch('');
                       }}
-                      className={`px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors ${
-                        value === model 
-                          ? 'bg-amber-50 text-amber-900 font-bold' 
+                      className={`px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors ${value === model
+                          ? 'bg-amber-50 text-amber-900 font-bold'
                           : 'text-zinc-700 hover:bg-zinc-100'
-                      }`}
+                        }`}
                     >
                       {model}
                     </div>
@@ -88,11 +87,11 @@ const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
   );
 };
 
-export default function Product({ 
-  selectedProduct, 
-  setCurrentPage, 
-  onAddToCart, 
-  onBuyNow 
+export default function Product({
+  selectedProduct,
+  setCurrentPage,
+  onAddToCart,
+  onBuyNow
 }) {
   const currentTitle = selectedProduct?.title || "Murugar Acrylic glass case";
   const currentImage = selectedProduct?.image || "/images/12857815f64121652110d55a.jpg";
@@ -161,17 +160,17 @@ export default function Product({
             <ChevronLeft size={16} /> Back to Collection
           </button>
         </div>
-        
+
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16">
           {/* Left Column - Images */}
           <div className="w-full lg:w-1/2 flex flex-col items-center">
             <div className="relative w-full max-w-lg aspect-[3/4] bg-white border border-zinc-100 rounded-3xl p-6 flex items-center justify-center shadow-sm">
               <img src={mainImage} alt={currentTitle} className="w-full h-full object-contain mix-blend-multiply" />
             </div>
-            
+
             <div className="flex gap-4 mt-6">
-              <button 
-                onClick={() => setMainImage(currentImage)} 
+              <button
+                onClick={() => setMainImage(currentImage)}
                 className="w-20 h-24 border-2 rounded-xl overflow-hidden border-zinc-900 flex items-center justify-center p-1 bg-white cursor-pointer"
               >
                 <img src={currentImage} alt="Thumb 1" className="w-full h-full object-contain mix-blend-multiply" />
@@ -191,10 +190,10 @@ export default function Product({
                 </div>
                 <p className="text-xs sm:text-sm text-zinc-500 mb-6">Free shipping within Tamil Nadu only. Additional charges (Door Delivery) apply for other states.</p>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   if (navigator.share) {
-                    navigator.share({ title: currentTitle, url: window.location.href }).catch(() => {});
+                    navigator.share({ title: currentTitle, url: window.location.href }).catch(() => { });
                   }
                 }}
                 className="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-700 hover:bg-zinc-50 shrink-0 shadow-sm transition-colors cursor-pointer"
@@ -206,11 +205,10 @@ export default function Product({
 
             {/* Notification / Toast Message */}
             {feedbackMsg && (
-              <div className={`p-3.5 mb-6 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
-                feedbackMsg.type === 'error' 
-                  ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+              <div className={`p-3.5 mb-6 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${feedbackMsg.type === 'error'
+                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
                   : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              }`}>
+                }`}>
                 <span>{feedbackMsg.text}</span>
               </div>
             )}
@@ -228,7 +226,7 @@ export default function Product({
                 )}
               </div>
 
-              <SearchableSelect 
+              <SearchableSelect
                 optionsByBrand={PHONE_MODELS_BY_BRAND}
                 value={selectedModel}
                 onChange={setSelectedModel}
@@ -245,7 +243,7 @@ export default function Product({
                 <label className="block text-xs font-bold text-zinc-900 uppercase tracking-wider mb-3">
                   MURUGAN WORDINGS (optional)
                 </label>
-                <select 
+                <select
                   value={wording}
                   onChange={(e) => setWording(e.target.value)}
                   className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-sm text-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 appearance-none cursor-pointer"
@@ -260,15 +258,15 @@ export default function Product({
 
             {/* Action Buttons */}
             <div className="flex gap-4 mb-10">
-              <button 
+              <button
                 onClick={handleAddToCart}
-                className="flex-1 bg-[#1a1a1a] text-white font-bold py-4 rounded-full text-[15px] hover:bg-black transition-colors shadow-lg shadow-zinc-900/20 cursor-pointer flex items-center justify-center gap-2"
+                className="flex-1 bg-white text-black border-2 border-black font-bold py-4 rounded-full text-[15px] hover:bg-zinc-50 transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 Add to Cart
               </button>
-              <button 
+              <button
                 onClick={handleBuyNow}
-                className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-900 font-bold py-4 rounded-full text-[15px] hover:from-amber-500 hover:to-amber-600 transition-colors shadow-lg shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2"
+                className="flex-1 bg-black text-white font-bold py-4 rounded-full text-[15px] hover:bg-zinc-800 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm"
               >
                 Buy Now
               </button>

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function StaticPage({ title }) {
   const navigate = useNavigate();
-  
+
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

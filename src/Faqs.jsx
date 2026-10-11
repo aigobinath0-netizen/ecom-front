@@ -102,7 +102,7 @@ export default function Faqs() {
             {categories.map((cat) => {
               const Icon = cat.icon;
               return (
-                <button 
+                <button
                   key={cat.id}
                   onClick={() => handleCategoryClick(cat.id)}
                   className="flex items-center gap-4 p-5 sm:p-6 bg-white border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-zinc-200 transition-all rounded-2xl group text-left w-full"
@@ -119,7 +119,7 @@ export default function Faqs() {
           <div className="max-w-5xl mx-auto">
             {/* Breadcrumb */}
             <div className="mb-6">
-              <button 
+              <button
                 onClick={() => setSelectedCategory(null)}
                 className="text-xs sm:text-sm font-bold text-[#3b82f6] hover:underline flex items-center gap-1 uppercase tracking-wide"
               >
@@ -137,7 +137,7 @@ export default function Faqs() {
                   {(faqData[selectedCategory] || []).length > 0 ? (
                     faqData[selectedCategory].map((faq, idx) => (
                       <div key={idx} className="border-b border-zinc-100 last:border-0 py-4">
-                        <button 
+                        <button
                           onClick={() => setOpenQuestionIdx(openQuestionIdx === idx ? -1 : idx)}
                           className="w-full flex items-center justify-between text-left gap-4"
                         >
@@ -170,7 +170,7 @@ export default function Faqs() {
                 <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-6">More FAQ'S</h3>
                 <div className="flex flex-col gap-1">
                   {categories.map((cat) => (
-                    <button 
+                    <button
                       key={cat.id}
                       onClick={() => handleCategoryClick(cat.id)}
                       className={`flex items-center justify-between p-3 rounded-lg text-sm font-bold transition-colors text-left ${selectedCategory === cat.id ? 'text-[#3b82f6]' : 'text-zinc-600 hover:bg-zinc-50'}`}
