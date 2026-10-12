@@ -96,7 +96,7 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
         <div className="flex items-end justify-between mb-5 sm:mb-7">
           <div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black tracking-tight">
-              Phone Cases & Collections
+              Phone Cases & Categories
             </h2>
             <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">
               Customized for iPhone, Samsung, OnePlus & all popular devices
@@ -107,11 +107,11 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
             type="button"
             onClick={() => {
               if (onSelectCategory) onSelectCategory('all');
-              else if (setCurrentPage) setCurrentPage('collection');
+              else if (setCurrentPage) setCurrentPage('categories');
             }}
             className="text-xs font-bold text-zinc-900 hover:text-zinc-600 underline underline-offset-4 cursor-pointer"
           >
-            View all collections &rarr;
+            View all categories &rarr;
           </button>
         </div>
 
@@ -122,7 +122,7 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
               key={cat.id || idx}
               onClick={() => {
                 if (onSelectCategory) onSelectCategory(cat);
-                else if (setCurrentPage) setCurrentPage('collection');
+                else if (setCurrentPage) setCurrentPage('categories');
               }}
               className="group flex flex-col items-center cursor-pointer select-none"
             >
@@ -214,7 +214,7 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
             <button
               onClick={() => {
                 if (onSelectCategory) onSelectCategory('all');
-                else if (setCurrentPage) setCurrentPage('collection');
+                else if (setCurrentPage) setCurrentPage('categories');
               }}
               className="bg-black hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-[0.2em] px-10 py-3.5 transition-colors cursor-pointer"
             >
@@ -246,7 +246,7 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
                 className="text-xs font-bold text-zinc-900 hover:text-zinc-600 uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                 onClick={() => {
                   if (onSelectCategory) onSelectCategory(category);
-                  else if (setCurrentPage) setCurrentPage('collection');
+                  else if (setCurrentPage) setCurrentPage('categories');
                 }}
               >
                 <span>View all</span>

@@ -154,10 +154,10 @@ export default function Product({
         {/* Back navigation */}
         <div className="mb-6">
           <button
-            onClick={() => setCurrentPage && setCurrentPage('collection')}
+            onClick={() => setCurrentPage && setCurrentPage('categories')}
             className="text-xs font-bold text-zinc-500 hover:text-zinc-950 flex items-center gap-1 transition-colors cursor-pointer"
           >
-            <ChevronLeft size={16} /> Back to Collection
+            <ChevronLeft size={16} /> Back to Categories
           </button>
         </div>
 

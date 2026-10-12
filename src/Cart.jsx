@@ -79,7 +79,7 @@ export default function Cart({
         {/* Top Header Actions */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100">
           <button
-            onClick={() => setCurrentPage('collection')}
+            onClick={() => setCurrentPage('categories')}
             className="text-xs font-bold text-zinc-500 hover:text-zinc-950 flex items-center gap-1.5 transition-colors cursor-pointer uppercase tracking-wider"
           >
             <ArrowLeft size={15} /> Continue Shopping
@@ -110,13 +110,13 @@ export default function Cart({
             </div>
             <h2 className="text-xl font-extrabold text-zinc-900 mb-2">Your Cart is Empty</h2>
             <p className="text-xs sm:text-sm text-zinc-500 mb-6">
-              Looks like you haven't added any phone cases to your cart yet. Explore our premium collections!
+              Looks like you haven't added any phone cases to your cart yet. Explore our premium categories!
             </p>
             <button
-              onClick={() => setCurrentPage('collection')}
+              onClick={() => setCurrentPage('categories')}
               className="bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold px-6 py-3.5 rounded-full transition-colors shadow-md cursor-pointer"
             >
-              Explore Collections
+              Explore Categories
             </button>
           </div>
         ) : (

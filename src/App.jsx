@@ -6,7 +6,6 @@ import Reviews from './Reviews';
 import ContactUs from './ContactUs';
 import Faqs from './Faqs';
 import TrackOrder from './TrackOrder';
-import Collection from './Collection';
 import Product from './Product';
 import Cart from './Cart';
 import Checkout from './Checkout';
@@ -23,8 +22,7 @@ function App() {
   const path = location.pathname;
   let currentPage = 'home';
   if (path === '/admin') currentPage = 'admin';
-  else if (path === '/categories' || path === '/category') currentPage = 'categories';
-  else if (path === '/collection') currentPage = 'collection';
+  else if (path === '/categories' || path === '/category' || path === '/collection') currentPage = 'categories';
   else if (path === '/reviews') currentPage = 'reviews';
   else if (path === '/contact') currentPage = 'contact';
   else if (path === '/faqs') currentPage = 'faqs';
@@ -136,12 +134,6 @@ function App() {
                 Categories
               </a>
               <a
-                className={`cursor-pointer transition-colors ${currentPage === 'collection' ? 'text-black font-bold' : 'hover:text-black'}`}
-                onClick={() => navigateTo('collection')}
-              >
-                Collections
-              </a>
-              <a
                 className={`cursor-pointer transition-colors ${currentPage === 'reviews' ? 'text-black font-bold' : 'hover:text-black'}`}
                 onClick={() => navigateTo('reviews')}
               >
@@ -186,7 +178,7 @@ function App() {
               Admin
             </button>
             <button 
-              onClick={() => navigateTo('collection')}
+              onClick={() => navigateTo('categories')}
               className="text-zinc-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-zinc-100 active:bg-zinc-200 transition-colors"
               title="Search"
             >
@@ -214,7 +206,7 @@ function App() {
           <Route path="/" element={
             <Home
               setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => navigateTo('collection', cat)}
+              onSelectCategory={(cat) => navigateTo('categories', cat)}
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
@@ -224,23 +216,25 @@ function App() {
           <Route path="/track" element={<TrackOrder />} />
           <Route path="/categories" element={
             <CategoriesPage
+              selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => navigateTo('collection', cat)}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
           <Route path="/category" element={
             <CategoriesPage
+              selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => navigateTo('collection', cat)}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
           <Route path="/collection" element={
-            <Collection
+            <CategoriesPage
               selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
               setCurrentPage={setCurrentPageWrapper}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
@@ -282,7 +276,7 @@ function App() {
           <Route path="/admin" element={
             <Admin
               setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => navigateTo('collection', cat)}
+              onSelectCategory={(cat) => navigateTo('categories', cat)}
             />
           } />
         </Routes>
@@ -350,10 +344,6 @@ function App() {
               </a>
               <a className="cursor-pointer hover:text-black py-3 px-3 rounded-xl hover:bg-zinc-50 flex items-center justify-between transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('categories'); }}>
                 <span>Categories</span>
-                <span className="text-zinc-400 text-xs">&rarr;</span>
-              </a>
-              <a className="cursor-pointer hover:text-black py-3 px-3 rounded-xl hover:bg-zinc-50 flex items-center justify-between transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('collection'); }}>
-                <span>Collections</span>
                 <span className="text-zinc-400 text-xs">&rarr;</span>
               </a>
               <a className="cursor-pointer hover:text-black py-3 px-3 rounded-xl hover:bg-zinc-50 flex items-center justify-between transition-colors" onClick={() => { setIsMobileMenuOpen(false); navigateTo('reviews'); }}>

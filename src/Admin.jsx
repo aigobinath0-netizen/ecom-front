@@ -1154,10 +1154,10 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                 type="button"
                                 onClick={() => {
                                   if (onSelectCategory) onSelectCategory(cat);
-                                  else if (setCurrentPage) setCurrentPage('collection');
+                                  else if (setCurrentPage) setCurrentPage('categories');
                                 }}
                                 className="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer"
-                                title="View Collection"
+                                title="View Category"
                               >
                                 <Eye className="w-4 h-4" />
                               </button>

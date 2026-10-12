@@ -10,6 +10,7 @@ import {
 import { Search, ChevronRight, ShieldCheck, Star, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function CategoriesPage({
+  selectedCategory,
   onSelectCategory,
   onSelectProduct,
   setCurrentPage
@@ -18,6 +19,7 @@ export default function CategoriesPage({
   const [products, setProducts] = useState([]);
   // 'phone_cover', 'temper_glass', 'laptop_skin', 'all'
   const [activeSectionId, setActiveSectionId] = useState('phone_cover');
+  const [selectedCat, setSelectedCat] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -33,6 +35,17 @@ export default function CategoriesPage({
       if (Array.isArray(prods)) setProducts(prods);
     });
   }, []);
+
+  useEffect(() => {
+    if (selectedCategory && selectedCategory !== 'all') {
+      const sec = selectedCategory.section || normalizeCategorySection(selectedCategory);
+      setActiveSectionId(sec);
+      setSelectedCat(selectedCategory);
+    } else if (selectedCategory === 'all') {
+      setActiveSectionId('all');
+      setSelectedCat(null);
+    }
+  }, [selectedCategory]);
 
   const allWithSections = categories.map(c => ({
     ...c,
@@ -57,14 +70,23 @@ export default function CategoriesPage({
     filteredCategories;
 
   const activeCategoryIds = new Set(activeCategories.map(c => c.id));
-  const activeProducts = products.filter(p => activeCategoryIds.has(p.categoryId));
+  const sectionProducts = products.filter(p => activeCategoryIds.has(p.categoryId));
+  const displayedProducts = selectedCat
+    ? products.filter(p => p.categoryId === selectedCat.id)
+    : sectionProducts;
 
   const handleCategoryClick = (cat) => {
+    setSelectedCat(cat);
+    if (cat.section && cat.section !== activeSectionId) {
+      setActiveSectionId(cat.section);
+    }
     if (onSelectCategory) {
       onSelectCategory(cat);
-    } else if (setCurrentPage) {
-      setCurrentPage('collection');
     }
+    setTimeout(() => {
+      const el = document.getElementById('category-products-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   return (
@@ -372,22 +394,37 @@ export default function CategoriesPage({
                 )}
               </div>
 
-              {/* Products in this Section */}
-              {activeProducts.length > 0 && (
-                <div className="pt-8 border-t border-zinc-100">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 uppercase tracking-tight">
-                        Featured In {CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name}
-                      </h3>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Top trending products available for custom order
-                      </p>
-                    </div>
+              {/* Products in this Section or Selected Category */}
+              <div className="pt-8 border-t border-zinc-100" id="category-products-section">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+                  <div>
+                    {selectedCat ? (
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-[#ea580c] px-2.5 py-0.5 rounded-full">
+                          Category: {selectedCat.title}
+                        </span>
+                        <button
+                          onClick={() => setSelectedCat(null)}
+                          className="text-xs font-semibold text-zinc-500 hover:text-black underline cursor-pointer"
+                        >
+                          View all in this section
+                        </button>
+                      </div>
+                    ) : null}
+                    <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 uppercase tracking-tight">
+                      {selectedCat ? `${selectedCat.title} Products` : `Featured In ${CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name}`}
+                    </h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {displayedProducts.length > 0
+                        ? `${displayedProducts.length} products available for custom order`
+                        : 'No products in this category yet'}
+                    </p>
                   </div>
+                </div>
 
+                {displayedProducts.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-                    {activeProducts.map((prod, idx) => (
+                    {displayedProducts.map((prod, idx) => (
                       <div
                         key={prod.id}
                         onClick={() => onSelectProduct && onSelectProduct(prod)}
@@ -415,8 +452,14 @@ export default function CategoriesPage({
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="py-10 px-4 border border-dashed border-zinc-200 rounded-xl text-center">
+                    <p className="text-xs sm:text-sm text-zinc-500">
+                      No products added for {selectedCat ? `"${selectedCat.title}"` : 'this section'} yet.
+                    </p>
+                  </div>
+                )}
+              </div>
 
             </div>
           )}

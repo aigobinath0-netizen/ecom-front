@@ -36,7 +36,7 @@ export default function Faqs() {
       { q: 'Where is Pravar Wraps based?', a: 'We are based in Avinashi, Tiruppur, Tamil Nadu, and we ship orders across India.' },
       { q: 'Can I return or exchange my order?', a: 'Yes, please check our Returns & Exchange policy page for details.' },
       { q: 'How long has Pravar Wraps been making custom cases?', a: 'We have been crafting customised acrylic and gold phone cases for over 5 years, focused on durability and print quality.' },
-      { q: 'Does Pravar Wraps only make phone cases?', a: 'Phone cases are our main product, but we also print custom stickers and a few personalised accessories — check our Collections page for the full range.' },
+      { q: 'Does Pravar Wraps only make phone cases?', a: 'Phone cases are our main product, but we also print custom stickers and a few personalised accessories — check our Categories page for the full range.' },
       { q: 'How can I stay updated on new designs?', a: 'Follow us on Instagram or subscribe to our newsletter from the homepage footer — new arrivals are posted there first.' }
     ],
     'payment': [
