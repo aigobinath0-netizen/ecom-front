@@ -59,9 +59,9 @@ export default function CategoriesPage({
   useEffect(() => {
     if (slug && categories.length > 0) {
       const cleanSlug = slug.toLowerCase();
-      const found = categories.find(c => 
-        (c.slug && c.slug.toLowerCase() === cleanSlug) || 
-        (c.id && c.id.toLowerCase() === cleanSlug) || 
+      const found = categories.find(c =>
+        (c.slug && c.slug.toLowerCase() === cleanSlug) ||
+        (c.id && c.id.toLowerCase() === cleanSlug) ||
         (c.title && c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug) ||
         (c.title && c.title.toLowerCase().replace(/\s+/g, '') === cleanSlug.replace(/-/g, ''))
       );
@@ -88,11 +88,11 @@ export default function CategoriesPage({
   const glassCategories = filteredCategories.filter(c => c.section === 'temper_glass');
   const skinCategories = filteredCategories.filter(c => c.section === 'laptop_skin');
 
-  const activeCategories = 
+  const activeCategories =
     activeSectionId === 'phone_cover' ? coverCategories :
-    activeSectionId === 'temper_glass' ? glassCategories :
-    activeSectionId === 'laptop_skin' ? skinCategories :
-    filteredCategories;
+      activeSectionId === 'temper_glass' ? glassCategories :
+        activeSectionId === 'laptop_skin' ? skinCategories :
+          filteredCategories;
 
   const handleCategoryClick = (cat) => {
     setSelectedCat(cat);
@@ -123,18 +123,18 @@ export default function CategoriesPage({
     rawCatProducts.length >= 4
       ? rawCatProducts
       : [
-          ...rawCatProducts,
-          ...[
-            { id: `${selectedCat.id}_p1`, categoryId: selectedCat.id, title: `${selectedCat.title}`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: selectedCat.image },
-            { id: `${selectedCat.id}_p2`, categoryId: selectedCat.id, title: `${selectedCat.title} - Matte Edition`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[0]?.image || selectedCat.image },
-            { id: `${selectedCat.id}_p3`, categoryId: selectedCat.id, title: `${selectedCat.title} - Custom Glass`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[1]?.image || selectedCat.image },
-            { id: `${selectedCat.id}_p4`, categoryId: selectedCat.id, title: `${selectedCat.title} - Special Edition`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[2]?.image || selectedCat.image },
-            { id: `${selectedCat.id}_p5`, categoryId: selectedCat.id, title: `${selectedCat.title} - Bestseller`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: selectedCat.image },
-            { id: `${selectedCat.id}_p6`, categoryId: selectedCat.id, title: `${selectedCat.title} - Premium Case`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[0]?.image || selectedCat.image },
-            { id: `${selectedCat.id}_p7`, categoryId: selectedCat.id, title: `${selectedCat.title} - Ultra Glossy`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[1]?.image || selectedCat.image },
-            { id: `${selectedCat.id}_p8`, categoryId: selectedCat.id, title: `${selectedCat.title} - Tough Shockproof`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[2]?.image || selectedCat.image }
-          ].slice(0, Math.max(4, 8 - rawCatProducts.length))
-        ]
+        ...rawCatProducts,
+        ...[
+          { id: `${selectedCat.id}_p1`, categoryId: selectedCat.id, title: `${selectedCat.title}`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: selectedCat.image },
+          { id: `${selectedCat.id}_p2`, categoryId: selectedCat.id, title: `${selectedCat.title} - Matte Edition`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[0]?.image || selectedCat.image },
+          { id: `${selectedCat.id}_p3`, categoryId: selectedCat.id, title: `${selectedCat.title} - Custom Glass`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[1]?.image || selectedCat.image },
+          { id: `${selectedCat.id}_p4`, categoryId: selectedCat.id, title: `${selectedCat.title} - Special Edition`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[2]?.image || selectedCat.image },
+          { id: `${selectedCat.id}_p5`, categoryId: selectedCat.id, title: `${selectedCat.title} - Bestseller`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: selectedCat.image },
+          { id: `${selectedCat.id}_p6`, categoryId: selectedCat.id, title: `${selectedCat.title} - Premium Case`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[0]?.image || selectedCat.image },
+          { id: `${selectedCat.id}_p7`, categoryId: selectedCat.id, title: `${selectedCat.title} - Ultra Glossy`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[1]?.image || selectedCat.image },
+          { id: `${selectedCat.id}_p8`, categoryId: selectedCat.id, title: `${selectedCat.title} - Tough Shockproof`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[2]?.image || selectedCat.image }
+        ].slice(0, Math.max(4, 8 - rawCatProducts.length))
+      ]
   ) : [];
 
   return (
@@ -159,8 +159,8 @@ export default function CategoriesPage({
             </button>
 
             <div className="text-xs text-zinc-500 hidden sm:flex items-center gap-2">
-              <span 
-                className="hover:underline cursor-pointer" 
+              <span
+                className="hover:underline cursor-pointer"
                 onClick={() => {
                   if (setCurrentPage) setCurrentPage('home');
                   else navigate('/');
@@ -305,21 +305,19 @@ export default function CategoriesPage({
                   setActiveSectionId('all');
                   setSelectedCat(null);
                 }}
-                className={`relative w-full flex flex-col items-center justify-center py-2 px-1 sm:p-3 transition-all cursor-pointer ${
-                  activeSectionId === 'all'
+                className={`relative w-full flex flex-col items-center justify-center py-2 px-1 sm:p-3 transition-all cursor-pointer ${activeSectionId === 'all'
                     ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
                     : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
-                }`}
+                  }`}
               >
                 {activeSectionId === 'all' && (
                   <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
                 )}
                 <div
-                  className={`w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${
-                    activeSectionId === 'all'
+                  className={`w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${activeSectionId === 'all'
                       ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
                       : 'border border-zinc-200 bg-[#f4f4f6]'
-                  }`}
+                    }`}
                 >
                   <img
                     src="/images/logo-mark-ayXhBs9R.png"
@@ -328,9 +326,8 @@ export default function CategoriesPage({
                   />
                 </div>
                 <span
-                  className={`text-[9px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${
-                    activeSectionId === 'all' ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                  }`}
+                  className={`text-[9px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${activeSectionId === 'all' ? 'text-[#ea580c] font-black' : 'text-zinc-700'
+                    }`}
                 >
                   Popular
                 </span>
@@ -345,21 +342,19 @@ export default function CategoriesPage({
                       setActiveSectionId(sec.id);
                       setSelectedCat(null);
                     }}
-                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 sm:p-3 transition-all cursor-pointer ${
-                      isActive
+                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 sm:p-3 transition-all cursor-pointer ${isActive
                         ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
                         : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
-                    }`}
+                      }`}
                   >
                     {isActive && (
                       <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
                     )}
                     <div
-                      className={`w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${
-                        isActive
+                      className={`w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${isActive
                           ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
                           : 'border border-zinc-200 bg-[#f4f4f6]'
-                      }`}
+                        }`}
                     >
                       <img
                         src={sec.icon}
@@ -368,9 +363,8 @@ export default function CategoriesPage({
                       />
                     </div>
                     <span
-                      className={`text-[9px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${
-                        isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                      }`}
+                      className={`text-[9px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
+                        }`}
                     >
                       {sec.shortName || sec.name}
                     </span>
