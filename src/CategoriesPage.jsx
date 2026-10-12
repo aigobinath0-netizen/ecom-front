@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   CATEGORY_SECTIONS,
-  DEFAULT_CATEGORIES,
-  DEFAULT_PRODUCTS,
   getStoredCategories,
   getStoredProducts,
   fetchCategoriesFromApi,
@@ -36,16 +34,7 @@ export default function CategoriesPage({
     });
   }, []);
 
-  // Merge categories so that all 3 sections always have content
-  const existingIds = new Set(categories.map(c => c.id));
-  const mergedCategories = [...categories];
-  DEFAULT_CATEGORIES.forEach(def => {
-    if (!existingIds.has(def.id)) {
-      mergedCategories.push(def);
-    }
-  });
-
-  const allWithSections = mergedCategories.map(c => ({
+  const allWithSections = categories.map(c => ({
     ...c,
     section: normalizeCategorySection(c)
   }));
@@ -68,12 +57,7 @@ export default function CategoriesPage({
     filteredCategories;
 
   const activeCategoryIds = new Set(activeCategories.map(c => c.id));
-  let activeProducts = products.filter(p => activeCategoryIds.has(p.categoryId));
-
-  // Fallback if products not assigned to this section yet
-  if (activeProducts.length === 0) {
-    activeProducts = DEFAULT_PRODUCTS.filter(p => activeCategoryIds.has(p.categoryId));
-  }
+  const activeProducts = products.filter(p => activeCategoryIds.has(p.categoryId));
 
   const handleCategoryClick = (cat) => {
     if (onSelectCategory) {
@@ -351,30 +335,41 @@ export default function CategoriesPage({
                   EXPLORE {CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name} CATEGORIES
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 sm:gap-7">
-                  {activeCategories.map((cat) => (
-                    <div
-                      key={cat.id}
-                      onClick={() => handleCategoryClick(cat)}
-                      className="group flex flex-col items-center cursor-pointer select-none"
-                    >
-                      {/* Circular Zapvi Card */}
-                      <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-1 flex items-center justify-center">
-                        <img
-                          src={cat.image}
-                          alt={cat.title}
-                          className="w-full h-full object-cover rounded-full"
-                          loading="lazy"
-                        />
-                      </div>
+                {activeCategories.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 sm:gap-7">
+                    {activeCategories.map((cat) => (
+                      <div
+                        key={cat.id}
+                        onClick={() => handleCategoryClick(cat)}
+                        className="group flex flex-col items-center cursor-pointer select-none"
+                      >
+                        {/* Circular Zapvi Card */}
+                        <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-1 flex items-center justify-center">
+                          <img
+                            src={cat.image}
+                            alt={cat.title}
+                            className="w-full h-full object-cover rounded-full"
+                            loading="lazy"
+                          />
+                        </div>
 
-                      {/* Title */}
-                      <h4 className="mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[120px] transition-colors">
-                        {cat.title}
-                      </h4>
-                    </div>
-                  ))}
-                </div>
+                        {/* Title */}
+                        <h4 className="mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[120px] transition-colors">
+                          {cat.title}
+                        </h4>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-12 px-6 border-2 border-dashed border-zinc-200 rounded-2xl text-center">
+                    <p className="text-zinc-500 font-semibold text-sm">
+                      No categories added in this section yet.
+                    </p>
+                    <p className="text-zinc-400 text-xs mt-1">
+                      You can add new categories anytime from the Admin panel!
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Products in this Section */}

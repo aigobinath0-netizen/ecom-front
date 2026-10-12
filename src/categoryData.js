@@ -114,18 +114,11 @@ export async function apiFetch(path, options = {}) {
 // Helper functions for categories (synchronous cache read)
 export function getStoredCategories() {
   try {
-    let custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
+    const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
     const deletedIds = JSON.parse(localStorage.getItem('deleted_category_ids') || '[]');
     const editedMap = JSON.parse(localStorage.getItem('edited_categories') || '{}');
 
-    // Seed default categories if none exist, or if old unsectioned/placeholder categories
-    const needsRefresh = custom.length < 8 || custom.some(c => !c.section);
-    if ((custom.length === 0 || needsRefresh) && deletedIds.length === 0) {
-      custom = DEFAULT_CATEGORIES;
-      localStorage.setItem('custom_categories', JSON.stringify(custom));
-    }
-
-    return custom
+    return (Array.isArray(custom) ? custom : [])
       .filter(cat => !deletedIds.includes(cat.id))
       .map(cat => {
         const merged = editedMap[cat.id] ? { ...cat, ...editedMap[cat.id] } : cat;
@@ -133,11 +126,11 @@ export function getStoredCategories() {
         return merged;
       });
   } catch (e) {
-    return DEFAULT_CATEGORIES;
+    return [];
   }
 }
 
-// Asynchronous fetch from backend with 2-way sync
+// Asynchronous fetch from backend (clean GET only - NEVER auto-posts)
 export async function fetchCategoriesFromApi() {
   try {
     const res = await apiFetch('/categories');
@@ -147,30 +140,8 @@ export async function fetchCategoriesFromApi() {
       ? rawServerCats.map(c => ({ ...c, section: normalizeCategorySection(c) }))
       : [];
 
-    // Check if local storage has any categories not yet synced to backend
-    const localCats = getStoredCategories();
-    if (Array.isArray(localCats) && localCats.length > 0) {
-      const serverIds = new Set(serverCats.map(c => c.id));
-      for (const locCat of localCats) {
-        if (!serverIds.has(locCat.id)) {
-          try {
-            await apiFetch('/categories', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(locCat)
-            });
-            serverCats.push(locCat);
-          } catch (e) {
-            console.error('Error syncing local category to server', e);
-          }
-        }
-      }
-    }
-
-    if (Array.isArray(serverCats) && serverCats.length > 0) {
-      localStorage.setItem('custom_categories', JSON.stringify(serverCats));
-      return serverCats;
-    }
+    localStorage.setItem('custom_categories', JSON.stringify(serverCats));
+    return serverCats;
   } catch (e) {
     console.warn('Backend categories API unavailable, using cached categories:', e.message);
   }
@@ -233,17 +204,11 @@ export async function deleteStoredCategory(id) {
 // Helper functions for products (synchronous cache read)
 export function getStoredProducts(categoryId = null) {
   try {
-    let custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
+    const custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
     const deletedIds = JSON.parse(localStorage.getItem('deleted_product_ids') || '[]');
     const editedMap = JSON.parse(localStorage.getItem('edited_products') || '{}');
 
-    // Seed default products if none exist and none were deleted
-    if (custom.length === 0 && deletedIds.length === 0) {
-      custom = DEFAULT_PRODUCTS;
-      localStorage.setItem('custom_products', JSON.stringify(custom));
-    }
-
-    const active = custom
+    const active = (Array.isArray(custom) ? custom : [])
       .filter(prod => !deletedIds.includes(prod.id))
       .map(prod => editedMap[prod.id] ? { ...prod, ...editedMap[prod.id] } : prod);
 
@@ -252,11 +217,11 @@ export function getStoredProducts(categoryId = null) {
     }
     return active;
   } catch (e) {
-    return DEFAULT_PRODUCTS;
+    return [];
   }
 }
 
-// Asynchronous fetch from backend with 2-way sync
+// Asynchronous fetch from backend (clean GET only - NEVER auto-posts)
 export async function fetchProductsFromApi(categoryId = null) {
   try {
     const url = (categoryId && categoryId !== 'all') 
@@ -267,30 +232,9 @@ export async function fetchProductsFromApi(categoryId = null) {
     if (!res.ok) throw new Error('Failed to fetch products');
     const serverProds = await res.json();
 
-    // Check if local storage has any products not yet synced to backend
-    const localProds = getStoredProducts();
-    if (Array.isArray(localProds) && localProds.length > 0) {
-      const serverIds = new Set((serverProds || []).map(p => p.id));
-      for (const locProd of localProds) {
-        if (!serverIds.has(locProd.id)) {
-          try {
-            await apiFetch('/products', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(locProd)
-            });
-            if (Array.isArray(serverProds)) serverProds.push(locProd);
-          } catch (e) {
-            console.error('Error syncing local product to server', e);
-          }
-        }
-      }
-    }
-
     if (Array.isArray(serverProds)) {
-      localStorage.setItem('custom_products', JSON.stringify(serverProds));
-      if (categoryId && categoryId !== 'all') {
-        return serverProds.filter(p => p.categoryId === categoryId);
+      if (!categoryId || categoryId === 'all') {
+        localStorage.setItem('custom_products', JSON.stringify(serverProds));
       }
       return serverProds;
     }
