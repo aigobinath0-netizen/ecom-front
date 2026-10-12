@@ -2,9 +2,18 @@
 
 export const CATEGORY_SECTIONS = [
   {
+    id: 'all',
+    name: 'All Categories',
+    shortName: 'All Categories',
+    headline: 'READY DESIGNS AND TRENDY CASES',
+    subtitle: 'Cases & covers for 500+ phone models',
+    icon: '/images/00e44de62ec83c768bb02d8f.jpg'
+  },
+  {
     id: 'phone_cover',
     name: 'Phone Cover',
     shortName: 'Mobile Covers',
+    headline: 'READY DESIGNS AND TRENDY CASES',
     subtitle: 'Cases & covers for 500+ phone models',
     icon: '/images/00e44de62ec83c768bb02d8f.jpg'
   },
@@ -12,6 +21,7 @@ export const CATEGORY_SECTIONS = [
     id: 'temper_glass',
     name: 'Phone Temper Glass',
     shortName: 'Temper Glass',
+    headline: 'EXTREME PROTECTION TEMPER GLASS',
     subtitle: '9H Extreme screen & lens protection',
     icon: '/images/fe03231113d0c658be329806.jpg'
   },
@@ -19,6 +29,7 @@ export const CATEGORY_SECTIONS = [
     id: 'laptop_skin',
     name: 'Phone & Laptop Skin',
     shortName: 'Skins & Wraps',
+    headline: 'PREMIUM TEXTURED SKINS & WRAPS',
     subtitle: '3M Textured wraps & custom skins',
     icon: '/images/b87cc8af278adb5833b5b6b1.jpg'
   }
