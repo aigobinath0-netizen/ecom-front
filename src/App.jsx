@@ -206,12 +206,7 @@ function App() {
           <Route path="/" element={
             <Home
               setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => {
-                setSelectedCategory(cat);
-                const slug = cat.slug || cat.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                navigate(`/collections/${slug}`);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onSelectCategory={(cat) => navigateTo('categories', cat)}
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
@@ -220,30 +215,6 @@ function App() {
           <Route path="/faqs" element={<Faqs />} />
           <Route path="/track" element={<TrackOrder />} />
           <Route path="/categories" element={
-            <CategoriesPage
-              selectedCategory={selectedCategory}
-              setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
-            />
-          } />
-          <Route path="/collections/:slug" element={
-            <CategoriesPage
-              selectedCategory={selectedCategory}
-              setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
-            />
-          } />
-          <Route path="/category/:slug" element={
-            <CategoriesPage
-              selectedCategory={selectedCategory}
-              setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
-            />
-          } />
-          <Route path="/collection/:slug" element={
             <CategoriesPage
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
