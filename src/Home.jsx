@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Truck, ShieldCheck, Headphones } from 'lucide-react';
 import {
   CATEGORY_SECTIONS,
@@ -9,8 +10,9 @@ import {
 import heroVideo from './assets/watermark-removed (1).mp4';
 
 export default function Home({ setCurrentPage, onSelectCategory }) {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState(getStoredCategories());
-  const [activeSectionId, setActiveSectionId] = useState('phone_cover');
+  const [activeSectionId, setActiveSectionId] = useState('all');
 
   useEffect(() => {
     // 1. Initial cached state
@@ -27,9 +29,20 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
     section: normalizeCategorySection(c)
   }));
 
-  const activeCategories = allWithSections.filter(c => c.section === activeSectionId);
-  const displayCategories = activeCategories;
-  const currentSection = CATEGORY_SECTIONS.find(s => s.id === activeSectionId) || CATEGORY_SECTIONS[0];
+  const displayCategories = activeSectionId === 'all'
+    ? allWithSections
+    : allWithSections.filter(c => c.section === activeSectionId);
+
+  const handleCategoryClick = (cat) => {
+    if (onSelectCategory) {
+      onSelectCategory(cat);
+    } else if (setCurrentPage) {
+      setCurrentPage('categories');
+    }
+    const catSlug = cat.slug || cat.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    navigate(`/collections/${catSlug}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <main className="flex-1 bg-white text-zinc-900 pb-20">
@@ -95,103 +108,66 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
         </div>
       </section>
 
-      {/* 4. SPLIT-RAIL CIRCULAR CATEGORY EXPLORER (MATCHING USER SCREENSHOT) */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12">
-        <div className="flex flex-row border-y border-zinc-200/80 bg-white">
-          
-          {/* Left Vertical Navigation Rail */}
-          <aside className="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0 bg-white border-r border-zinc-200/90 py-4 sm:py-6">
-            <div className="flex flex-col gap-3 sm:gap-5">
-              {CATEGORY_SECTIONS.map((sec) => {
-                const isActive = activeSectionId === sec.id;
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => setActiveSectionId(sec.id)}
-                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 transition-all cursor-pointer ${
-                      isActive
-                        ? 'text-[#ea580c]'
-                        : 'text-zinc-700 hover:text-black'
-                    }`}
-                  >
-                    {/* Active Orange Bar on Left Edge */}
-                    {isActive && (
-                      <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
-                    )}
-
-                    {/* Circular Icon with Orange Ring when Active */}
-                    <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${
-                      isActive
-                        ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/30 scale-105 shadow-sm bg-white'
-                        : 'border border-zinc-200 bg-[#f4f4f6]'
-                    }`}>
-                      <img
-                        src={sec.icon}
-                        alt={sec.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </div>
-
-                    {/* Label below icon */}
-                    <span className={`text-xs sm:text-[13px] tracking-tight mt-1.5 font-bold text-center leading-tight line-clamp-2 px-1 ${
-                      isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                    }`}>
-                      {sec.shortName || sec.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-
-          {/* Right Circular Categories Area */}
-          <div className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 bg-white flex flex-col justify-start">
-            {/* Section Subtitle */}
-            <div className="mb-5 sm:mb-7">
-              <p className="text-zinc-500 text-xs sm:text-sm font-medium">
-                {currentSection.subtitle}
-              </p>
-            </div>
-
-            {/* Circular Category Bubbles matching User Screenshot */}
-            {displayCategories.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6 sm:gap-x-6 sm:gap-y-8">
-                {displayCategories.map((cat, idx) => (
-                  <div
-                    key={cat.id || idx}
-                    onClick={() => {
-                      if (onSelectCategory) onSelectCategory(cat);
-                      else if (setCurrentPage) setCurrentPage('categories');
-                    }}
-                    className="group flex flex-col items-center cursor-pointer select-none"
-                  >
-                    {/* Circular Bubble Card */}
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-white border border-zinc-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.03)] group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] group-hover:ring-2 group-hover:ring-[#ea580c]/30 transition-all duration-300 p-1 flex items-center justify-center">
-                      <img
-                        src={cat.image}
-                        alt={cat.title}
-                        className="w-full h-full object-cover rounded-full"
-                        loading="lazy"
-                      />
-                    </div>
-
-                    {/* Title Directly Underneath */}
-                    <h4 className="mt-2 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[100px] sm:max-w-[125px] transition-colors">
-                      {cat.title}
-                    </h4>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center border border-dashed border-zinc-200 rounded-2xl">
-                <p className="text-zinc-400 text-xs sm:text-sm">
-                  No categories in this section yet.
-                </p>
-              </div>
-            )}
-          </div>
-
+      {/* 4. CATEGORY GRID (MATCHING ZAPVI IMAGE 2) */}
+      <section className="max-w-[1500px] mx-auto px-4 sm:px-8 lg:px-12 mt-8 sm:mt-12">
+        {/* Category Filter Pills (Minimal & Sleek) */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-6 sm:mb-10">
+          {[
+            { id: 'all', name: 'All Categories' },
+            { id: 'phone_cover', name: 'Mobile Covers' },
+            { id: 'temper_glass', name: 'Phone Temper Glass' },
+            { id: 'laptop_skin', name: 'Phone & Laptop Skin' }
+          ].map((tab) => {
+            const isActive = activeSectionId === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSectionId(tab.id)}
+                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold tracking-tight transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-zinc-950 text-white shadow-md'
+                    : 'bg-zinc-100 text-zinc-600 hover:text-black hover:bg-zinc-200'
+                }`}
+              >
+                {tab.name}
+              </button>
+            );
+          })}
         </div>
+
+        {/* 5-Column Grid of Rounded Category Cards Matching Image 2 */}
+        {displayCategories.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5 lg:gap-6">
+            {displayCategories.map((cat, idx) => (
+              <div
+                key={cat.id || idx}
+                onClick={() => handleCategoryClick(cat)}
+                className="group flex flex-col items-center cursor-pointer select-none"
+              >
+                {/* Rounded Rectangular Card Image (Matching Image 2) */}
+                <div className="w-full aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] group-hover:shadow-xl group-hover:border-zinc-400 group-hover:-translate-y-1 transition-all duration-300 relative">
+                  <img
+                    src={cat.image}
+                    alt={cat.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Title Centered Below Card (Matching Image 2) */}
+                <h3 className="mt-2 sm:mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-1 max-w-full transition-colors">
+                  {cat.title}
+                </h3>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-16 text-center border border-dashed border-zinc-200 rounded-3xl">
+            <p className="text-zinc-400 text-xs sm:text-sm font-medium">
+              No categories in this section yet.
+            </p>
+          </div>
+        )}
       </section>
     </main>
   );
