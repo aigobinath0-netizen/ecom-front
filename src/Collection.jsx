@@ -187,20 +187,24 @@ export default function Collection({
 
         {/* Product Grid - Customer View (Matching Screenshot 2) */}
         {currentCat === 'all' ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5 md:gap-6">
             {categories.map((cat, idx) => (
               <div
                 key={cat.id || idx}
-                className="group flex flex-col cursor-pointer"
+                className="group flex flex-col items-center cursor-pointer select-none"
                 onClick={() => handleSelectCategory(cat)}
               >
-                <div className="aspect-square w-full overflow-hidden rounded-lg bg-[#f4f4f5] p-4 flex items-center justify-center">
-                  <img alt={cat.title} className="w-full h-full object-contain group-hover:scale-105 transition duration-300" src={cat.image} />
+                <div className="aspect-square w-full overflow-hidden rounded-2xl sm:rounded-[22px] bg-[#f4f4f6] border border-zinc-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] group-hover:shadow-md transition-all duration-300">
+                  <img
+                    alt={cat.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    src={cat.image}
+                    loading="lazy"
+                  />
                 </div>
-                <div className="pt-3 text-center">
-                  <h3 className="text-xs sm:text-sm font-medium text-zinc-900 line-clamp-1">{cat.title}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">Explore Collection &rarr;</p>
-                </div>
+                <h3 className="mt-2.5 sm:mt-3 text-center text-xs sm:text-[13px] md:text-sm font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 transition-colors px-1">
+                  {cat.title}
+                </h3>
               </div>
             ))}
           </div>

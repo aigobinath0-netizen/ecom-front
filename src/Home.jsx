@@ -91,14 +91,14 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
         </div>
       </section>
 
-      {/* 4. FEATURED CATEGORIES GRID (COMPACT & ORDERED ONE BY ONE UNDER) */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-10 sm:mt-14">
-        <div className="flex items-end justify-between mb-6">
+      {/* 4. FEATURED CATEGORIES GRID (MATCHING ZAPVI CLEAN 5-COLUMN DESIGN) */}
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12">
+        <div className="flex items-end justify-between mb-5 sm:mb-7">
           <div>
-            <h2 className="text-xl sm:text-3xl font-extrabold text-black tracking-tight">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black tracking-tight">
               Phone Cases & Collections
             </h2>
-            <p className="text-zinc-500 text-xs sm:text-sm mt-1">
+            <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">
               Customized for iPhone, Samsung, OnePlus & all popular devices
             </p>
           </div>
@@ -115,8 +115,8 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
           </button>
         </div>
 
-        {/* Compact Grid with All Categories coming one by one under */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
+        {/* 5-Column Grid Matching Zapvi Reference */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5 md:gap-6">
           {categories.map((cat, idx) => (
             <div
               key={cat.id || idx}
@@ -124,38 +124,22 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
                 if (onSelectCategory) onSelectCategory(cat);
                 else if (setCurrentPage) setCurrentPage('collection');
               }}
-              className="group bg-[#f4f4f5] hover:bg-zinc-100/90 border border-zinc-200/70 rounded-2xl p-4 sm:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+              className="group flex flex-col items-center cursor-pointer select-none"
             >
-              {/* Centered Phone Case Mockup (Top) */}
-              <div className="w-full h-36 sm:h-44 flex items-center justify-center overflow-hidden">
+              {/* Rounded Square Image Box */}
+              <div className="w-full aspect-square rounded-2xl sm:rounded-[22px] overflow-hidden bg-[#f4f4f6] relative border border-zinc-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] group-hover:shadow-md transition-all duration-300">
                 <img
                   alt={cat.title}
-                  className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   src={cat.image}
+                  loading="lazy"
                 />
               </div>
 
-              {/* Category Details Under Image */}
-              <div className="w-full mt-3 text-center flex flex-col items-center">
-                <span className="text-[#ea580c] text-[10px] font-black uppercase tracking-wider block mb-1">
-                  NEW
-                </span>
-                <h3 className="text-xs sm:text-base font-bold text-zinc-950 tracking-tight leading-snug line-clamp-1 group-hover:text-black">
-                  {cat.title}
-                </h3>
-                <p className="text-[11px] text-zinc-500 mt-0.5">
-                  Acrylic Edition
-                </p>
-                <p className="text-xs sm:text-sm font-semibold text-zinc-900 mt-1">
-                  ₹ 499/- Onwards
-                </p>
-
-                <div className="mt-3 flex justify-center w-full">
-                  <span className="inline-block text-[11px] font-bold px-4 py-1.5 rounded-full bg-black text-white group-hover:bg-zinc-800 transition-colors shadow-xs">
-                    Shop Now
-                  </span>
-                </div>
-              </div>
+              {/* Title Directly Underneath */}
+              <h3 className="mt-2.5 sm:mt-3 text-center text-xs sm:text-[13px] md:text-sm font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 transition-colors px-1">
+                {cat.title}
+              </h3>
             </div>
           ))}
         </div>

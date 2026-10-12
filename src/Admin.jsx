@@ -44,6 +44,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   // New Category form state
   const [newCategory, setNewCategory] = useState({
     title: '',
+    section: 'phone_cover',
     image: null,
     bannerImage: null,
     bannerType: 'split',
@@ -51,6 +52,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     startingPrice: 499
   });
   const [editingCategory, setEditingCategory] = useState(null);
+  const [categorySectionFilter, setCategorySectionFilter] = useState('all');
 
   // New Product form state
   const [newProduct, setNewProduct] = useState({
@@ -258,6 +260,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     const categoryObj = {
       id: catId,
       title: newCategory.title.trim(),
+      section: newCategory.section || 'phone_cover',
       slug: slug || catId,
       image: newCategory.image || '/images/594fce775db07228d0094884.jpg',
       bannerImage: newCategory.bannerImage || null,
@@ -278,6 +281,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     refreshCategoriesAndProducts();
     setNewCategory({ 
       title: '', 
+      section: 'phone_cover',
       image: null, 
       bannerImage: null, 
       bannerType: 'split',
@@ -285,7 +289,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       startingPrice: 499 
     });
     setActiveSubTab('manage-categories');
-    alert(`Category "${categoryObj.title}" created successfully!`);
+    alert(`Category "${categoryObj.title}" created successfully under section "${categoryObj.section}"!`);
   };
 
   const handleDeleteCategory = (id, catTitle) => {
@@ -920,12 +924,56 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
               <form onSubmit={handleCreateCategory} className="max-w-xl space-y-5">
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1.5">
-                    Category Title (e.g. TVK Acrylic Strong Glass Cases)
+                    1. Select Parent Section (Choose 1 of 3)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setNewCategory({ ...newCategory, section: 'phone_cover' })}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        newCategory.section === 'phone_cover'
+                          ? 'border-[#ea580c] bg-amber-50/70 text-zinc-950 ring-2 ring-[#ea580c]'
+                          : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
+                      }`}
+                    >
+                      <span className="block text-xs font-extrabold text-zinc-900">📱 1. Phone Cover</span>
+                      <span className="text-[10px] text-zinc-500 mt-0.5 block">Cases & Covers</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewCategory({ ...newCategory, section: 'temper_glass' })}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        newCategory.section === 'temper_glass'
+                          ? 'border-[#ea580c] bg-amber-50/70 text-zinc-950 ring-2 ring-[#ea580c]'
+                          : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
+                      }`}
+                    >
+                      <span className="block text-xs font-extrabold text-zinc-900">🛡️ 2. Temper Glass</span>
+                      <span className="text-[10px] text-zinc-500 mt-0.5 block">9H, Privacy, UV</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewCategory({ ...newCategory, section: 'laptop_skin' })}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        newCategory.section === 'laptop_skin'
+                          ? 'border-[#ea580c] bg-amber-50/70 text-zinc-950 ring-2 ring-[#ea580c]'
+                          : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
+                      }`}
+                    >
+                      <span className="block text-xs font-extrabold text-zinc-900">💻 3. Laptop Skin</span>
+                      <span className="text-[10px] text-zinc-500 mt-0.5 block">Phone & Laptop Wraps</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1.5">
+                    Category Title (e.g. UV Curved Glass or TVK Acrylic Case)
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. TVK Acrylic Strong Glass Cases"
+                    placeholder="e.g. Matte Anti-Glare Tempered Glass"
                     value={newCategory.title}
                     onChange={(e) => setNewCategory({ ...newCategory, title: e.target.value })}
                     className="w-full border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
@@ -1022,6 +1070,29 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
             {/* MANAGE CATEGORIES LIST */}
             {activeSubTab === 'manage-categories' && (
               <div>
+                {/* Section Filter Pills */}
+                <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none">
+                  {[
+                    { id: 'all', label: 'All Sections' },
+                    { id: 'phone_cover', label: '📱 1. Phone Cover' },
+                    { id: 'temper_glass', label: '🛡️ 2. Phone Temper Glass' },
+                    { id: 'laptop_skin', label: '💻 3. Phone & Laptop Skin' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setCategorySectionFilter(tab.id)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                        categorySectionFilter === tab.id
+                          ? 'bg-zinc-950 text-white shadow-xs'
+                          : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
                 {categories.length === 0 ? (
                   <div className="text-center py-12 px-4 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
                     <p className="text-sm font-bold text-zinc-800">No categories created yet</p>
@@ -1036,8 +1107,14 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {categories.map((cat) => {
+                    {categories
+                      .filter(c => categorySectionFilter === 'all' || (c.section || 'phone_cover') === categorySectionFilter)
+                      .map((cat) => {
                       const prodCount = products.filter(p => p.categoryId === cat.id).length;
+                      const secName = 
+                        cat.section === 'temper_glass' ? '🛡️ Temper Glass' :
+                        cat.section === 'laptop_skin' ? '💻 Skin & Wrap' :
+                        '📱 Phone Cover';
                       return (
                         <div
                           key={cat.id}
@@ -1050,14 +1127,12 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                             <div className="min-w-0 flex-1">
                               <h4 className="font-bold text-zinc-900 text-sm line-clamp-2">{cat.title}</h4>
                               <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                                <span className="text-[10px] font-bold text-[#ea580c] bg-amber-50 px-2 py-0.5 rounded-md">
+                                  {secName}
+                                </span>
+                                <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">
                                   {prodCount} Products
                                 </span>
-                                {cat.bannerImage && (
-                                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">
-                                    Frame Set ✓
-                                  </span>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -1767,6 +1842,19 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                   onChange={(e) => setEditingCategory({ ...editingCategory, title: e.target.value })}
                   className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 outline-none focus:border-amber-400 text-sm"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-1">Parent Section</label>
+                <select
+                  value={editingCategory.section || 'phone_cover'}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, section: e.target.value })}
+                  className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 outline-none focus:border-amber-400 text-sm bg-white"
+                >
+                  <option value="phone_cover">📱 1. Phone Cover</option>
+                  <option value="temper_glass">🛡️ 2. Phone Temper Glass</option>
+                  <option value="laptop_skin">💻 3. Phone & Laptop Skin</option>
+                </select>
               </div>
 
               <div>
