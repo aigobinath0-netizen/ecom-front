@@ -43,7 +43,7 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
 
     // 2. Fetch live data from server
     fetchCategoriesFromApi().then(cats => {
-      if (Array.isArray(cats)) setCategories(cats);
+      if (Array.isArray(cats) && cats.length) setCategories(cats);
     });
   }, []);
 
@@ -59,12 +59,11 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
   const handleCategoryClick = (cat) => {
     if (onSelectCategory) {
       onSelectCategory(cat);
-    } else if (setCurrentPage) {
-      setCurrentPage('categories');
+    } else {
+      const slug = cat.slug || cat.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      navigate(`/collections/${slug}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    const catSlug = cat.slug || cat.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    navigate(`/collections/${catSlug}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -134,7 +133,7 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
       {/* 4. SPLIT-RAIL CATEGORY EXPLORER WITH ZAPVI-STYLE CARDS */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12">
         <div className="flex flex-row border-y border-zinc-200/80 bg-white min-h-[500px]">
-          
+
           {/* Left Vertical Navigation Rail */}
           <aside className="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0 bg-white border-r border-zinc-200/90 py-4 sm:py-6">
             <div className="flex flex-col gap-3 sm:gap-5 sticky top-24">

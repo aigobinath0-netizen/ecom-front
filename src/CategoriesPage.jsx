@@ -8,30 +8,7 @@ import {
   fetchProductsFromApi,
   normalizeCategorySection
 } from './categoryData';
-import { Search, ArrowLeft, LayoutGrid } from 'lucide-react';
-
-const SIDE_NAV_ITEMS = [
-  {
-    id: 'all',
-    name: 'All Categories',
-    icon: null
-  },
-  {
-    id: 'phone_cover',
-    name: 'Mobile Covers',
-    icon: '/images/00e44de62ec83c768bb02d8f.jpg'
-  },
-  {
-    id: 'temper_glass',
-    name: 'Phone Temper Glass',
-    icon: '/images/fe03231113d0c658be329806.jpg'
-  },
-  {
-    id: 'laptop_skin',
-    name: 'Phone & Laptop Skin',
-    icon: '/images/b87cc8af278adb5833b5b6b1.jpg'
-  }
-];
+import { Search, ArrowLeft } from 'lucide-react';
 
 export default function CategoriesPage({
   selectedCategory,
@@ -44,7 +21,8 @@ export default function CategoriesPage({
 
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [activeSectionId, setActiveSectionId] = useState('all');
+  // 'phone_cover', 'temper_glass', 'laptop_skin', 'all'
+  const [activeSectionId, setActiveSectionId] = useState('phone_cover');
   const [selectedCat, setSelectedCat] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -307,26 +285,25 @@ export default function CategoriesPage({
         </div>
       ) : (
         /* ========================================================================= */
-        /* B. SPLIT-RAIL CATEGORY EXPLORER WITH ZAPVI-STYLE CARDS                   */
+        /* B. SPLIT-RAIL CATEGORY EXPLORER (MATCHING HOME & USER SCREENSHOT)        */
         /* ========================================================================= */
         <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-row min-h-[calc(100vh-120px)] bg-white border-b border-zinc-200/80">
           {/* Left Vertical Navigation Rail */}
           <aside className="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0 bg-white border-r border-zinc-200/90 py-4 sm:py-6">
-            <div className="flex flex-col gap-3 sm:gap-5 sticky top-24">
-              {SIDE_NAV_ITEMS.map((item) => {
-                const isActive = activeSectionId === item.id;
+            <div className="flex flex-col gap-3 sm:gap-5">
+              {CATEGORY_SECTIONS.map((sec) => {
+                const isActive = activeSectionId === sec.id;
                 return (
                   <button
-                    key={item.id}
+                    key={sec.id}
                     onClick={() => {
-                      setActiveSectionId(item.id);
+                      setActiveSectionId(sec.id);
                       setSelectedCat(null);
                     }}
-                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 transition-all cursor-pointer ${
-                      isActive
+                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 transition-all cursor-pointer ${isActive
                         ? 'text-[#ea580c]'
                         : 'text-zinc-700 hover:text-black'
-                    }`}
+                      }`}
                   >
                     {/* Active Orange Bar on Left Edge */}
                     {isActive && (
@@ -334,29 +311,21 @@ export default function CategoriesPage({
                     )}
 
                     {/* Circular Icon with Orange Ring when Active */}
-                    <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${
-                      isActive
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${isActive
                         ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/30 scale-105 shadow-sm bg-white'
                         : 'border border-zinc-200 bg-[#f4f4f6]'
-                    }`}>
-                      {item.icon ? (
-                        <img
-                          src={item.icon}
-                          alt={item.name}
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-full bg-gradient-to-br from-zinc-900 to-zinc-700 flex items-center justify-center text-white shadow-inner">
-                          <LayoutGrid className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                        </div>
-                      )}
+                      }`}>
+                      <img
+                        src={sec.icon}
+                        alt={sec.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
                     </div>
 
                     {/* Label below icon */}
-                    <span className={`text-xs sm:text-[13px] tracking-tight mt-1.5 font-bold text-center leading-tight line-clamp-2 px-1 ${
-                      isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                    }`}>
-                      {item.name}
+                    <span className={`text-xs sm:text-[13px] tracking-tight mt-1.5 font-bold text-center leading-tight line-clamp-2 px-1 ${isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
+                      }`}>
+                      {sec.shortName || sec.name}
                     </span>
                   </button>
                 );
