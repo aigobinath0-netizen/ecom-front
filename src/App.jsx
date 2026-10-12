@@ -97,10 +97,16 @@ function App() {
   };
 
   const navigateTo = (page, category = null, product = null) => {
-    if (category !== null) setSelectedCategory(category);
+    setSelectedCategory(category);
     if (product !== null) setSelectedProduct(product);
-    if (page === 'home') navigate('/');
-    else navigate(`/${page}`);
+    if (page === 'home') {
+      navigate('/');
+    } else if (page === 'categories' && category) {
+      const slug = category.slug || category.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      navigate(`/collections/${slug}`);
+    } else {
+      navigate(`/${page}`);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -206,7 +212,12 @@ function App() {
           <Route path="/" element={
             <Home
               setCurrentPage={setCurrentPageWrapper}
-              onSelectCategory={(cat) => navigateTo('categories', cat)}
+              onSelectCategory={(cat) => {
+                setSelectedCategory(cat);
+                const slug = cat.slug || cat.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                navigate(`/collections/${slug}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
@@ -222,7 +233,39 @@ function App() {
               onSelectProduct={(prod) => navigateTo('product', null, prod)}
             />
           } />
+          <Route path="/categories/:slug" element={
+            <CategoriesPage
+              selectedCategory={selectedCategory}
+              setCurrentPage={setCurrentPageWrapper}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
+              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+            />
+          } />
           <Route path="/category" element={
+            <CategoriesPage
+              selectedCategory={selectedCategory}
+              setCurrentPage={setCurrentPageWrapper}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
+              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+            />
+          } />
+          <Route path="/category/:slug" element={
+            <CategoriesPage
+              selectedCategory={selectedCategory}
+              setCurrentPage={setCurrentPageWrapper}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
+              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+            />
+          } />
+          <Route path="/collections/:slug" element={
+            <CategoriesPage
+              selectedCategory={selectedCategory}
+              setCurrentPage={setCurrentPageWrapper}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
+              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+            />
+          } />
+          <Route path="/collection/:slug" element={
             <CategoriesPage
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}

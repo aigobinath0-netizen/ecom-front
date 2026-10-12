@@ -117,10 +117,39 @@ export default function CategoriesPage({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Products belonging to the selected category - strictly user-added products only
-  const selectedCatProducts = selectedCat
-    ? products.filter(p => p.categoryId === selectedCat.id || p.categoryTitle === selectedCat.title)
+  // Products belonging to the selected category - strictly user-added products
+  const matchedCatProducts = selectedCat
+    ? products.filter(p => {
+        if (!p) return false;
+        // 1. Direct category ID match
+        if (p.categoryId && (p.categoryId === selectedCat.id || p.categoryId === selectedCat._id)) return true;
+        if (p.category && (p.category === selectedCat.id || p.category === selectedCat._id || p.category === selectedCat.title)) return true;
+        // 2. Category Title match
+        if (p.categoryTitle && p.categoryTitle.toLowerCase() === selectedCat.title.toLowerCase()) return true;
+        // 3. Category Slug match
+        if (p.categorySlug && selectedCat.slug && p.categorySlug.toLowerCase() === selectedCat.slug.toLowerCase()) return true;
+        // 4. Normalized word match (e.g., Sivan/Shivan, Murugan, TVK, Thala, Photo Gold, Temp, Skin)
+        const catNorm = (selectedCat.title || '').toLowerCase().replace(/sh/g, 's');
+        const prodNorm = (p.title || '').toLowerCase().replace(/sh/g, 's');
+        if (prodNorm === catNorm) return true;
+        const cleanWords = catNorm.replace(/acrylic|glass|cases|case|mobile|covers|cover|strong/g, '').trim().split(/\s+/).filter(w => w.length >= 3);
+        if (cleanWords.length > 0 && cleanWords.some(w => prodNorm.includes(w))) return true;
+        if (catNorm.includes('priya') || catNorm.includes('gobi')) {
+          if (prodNorm.includes('gold') || prodNorm.includes('photo') || prodNorm.includes('customized')) return true;
+        }
+        return false;
+      })
     : [];
+
+  // Fallback to section products if specific category has no direct products
+  const selectedCatProducts = (matchedCatProducts.length > 0 || !selectedCat)
+    ? matchedCatProducts
+    : products.filter(p => {
+        const sec = selectedCat.section || normalizeCategorySection(selectedCat);
+        if (sec === 'temper_glass') return (p.title || '').toLowerCase().includes('temp') || (p.title || '').toLowerCase().includes('glass');
+        if (sec === 'laptop_skin') return (p.title || '').toLowerCase().includes('skin') || (p.title || '').toLowerCase().includes('wrap');
+        return true;
+      });
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -162,120 +191,58 @@ export default function CategoriesPage({
             </div>
           </div>
 
-          {/* 1. HERO BANNER (MATCHING IMAGE 1: STICKOVER STYLE) */}
-          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#0a0a0c] via-[#111216] to-[#08080a] text-white p-6 sm:p-12 lg:p-16 border border-zinc-800 shadow-2xl">
-            {/* Subtle warm glow background accent */}
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-amber-500/10 via-orange-500/5 to-transparent pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
-              {/* Left Headline, Price & Value Props */}
-              <div className="flex-1 max-w-xl text-left">
-                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.18] tracking-tight">
-                  {selectedCat.bannerHeadline || 'Make Your Smartphone Case Stand Out From The Crowd'}
-                </h1>
-
-                <div className="w-full max-w-md h-[1px] bg-zinc-700/80 my-5 sm:my-7" />
-
-                <div className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-                  Starting @ ₹ {selectedCat.startingPrice || 499}/-
-                </div>
-
-                <div className="flex items-center gap-3 text-xs sm:text-sm text-zinc-300 font-medium tracking-wide mt-4 sm:mt-5">
-                  <span>Free Shipping</span>
-                  <span className="text-zinc-600">|</span>
-                  <span>No Hidden Charges</span>
-                </div>
-              </div>
-
-              {/* Right Phone Case Mockups matching Image 1 */}
-              <div className="shrink-0 flex items-center justify-center gap-4 sm:gap-7">
-                {selectedCat.bannerImage ? (
-                  <img
-                    src={selectedCat.bannerImage}
-                    alt={selectedCat.title}
-                    className="max-h-[360px] w-auto object-contain rounded-2xl drop-shadow-[0_20px_35px_rgba(0,0,0,0.8)]"
-                  />
-                ) : (
-                  <>
-                    {/* Phone Case 1 (Left Case with Black Bumper & Camera Module) */}
-                    <div className="w-32 h-56 sm:w-44 sm:h-76 md:w-52 md:h-92 rounded-[28px] sm:rounded-[38px] bg-zinc-950 p-1.5 sm:p-2 border-[3px] border-zinc-700 shadow-2xl relative overflow-hidden flex flex-col items-center drop-shadow-[0_25px_45px_rgba(0,0,0,0.9)] hover:scale-105 transition-transform duration-300">
-                      {/* Realistic Camera Bump Cutout */}
-                      <div className="absolute top-2 left-2 w-8 h-12 sm:w-11 sm:h-16 bg-black/95 rounded-xl sm:rounded-2xl border border-zinc-700/90 z-20 flex flex-col items-center justify-around py-1 shadow-inner">
-                        <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-zinc-900 border-2 border-zinc-600 ring-1 ring-zinc-700"></div>
-                        <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-zinc-900 border-2 border-zinc-600 ring-1 ring-zinc-700"></div>
-                      </div>
-                      <img
-                        src={selectedCatProducts[0]?.image || selectedCat.image}
-                        alt={selectedCat.title}
-                        className="w-full h-full object-cover rounded-[22px] sm:rounded-[32px]"
-                      />
-                    </div>
-
-                    {/* Phone Case 2 (Right Case with Black Bumper & Camera Module) */}
-                    <div className="w-32 h-56 sm:w-44 sm:h-76 md:w-52 md:h-92 rounded-[28px] sm:rounded-[38px] bg-zinc-950 p-1.5 sm:p-2 border-[3px] border-zinc-700 shadow-2xl relative overflow-hidden flex flex-col items-center drop-shadow-[0_30px_50px_rgba(0,0,0,0.95)] hover:scale-105 transition-transform duration-300">
-                      {/* Realistic Camera Bump Cutout */}
-                      <div className="absolute top-2 left-2 w-8 h-12 sm:w-11 sm:h-16 bg-black/95 rounded-xl sm:rounded-2xl border border-zinc-700/90 z-20 flex flex-col items-center justify-around py-1 shadow-inner">
-                        <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-zinc-900 border-2 border-zinc-600 ring-1 ring-zinc-700"></div>
-                        <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-zinc-900 border-2 border-zinc-600 ring-1 ring-zinc-700"></div>
-                      </div>
-                      <img
-                        src={selectedCatProducts[1]?.image || selectedCatProducts[0]?.image || selectedCat.image}
-                        alt={selectedCat.title}
-                        className="w-full h-full object-cover rounded-[22px] sm:rounded-[32px]"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
+          {/* 1. FULL FRAME UPLOADED BANNER IMAGE (MATCHING USER REQUEST) */}
+          {(selectedCat.bannerImage || selectedCat.image) && (
+            <div className="w-full rounded-2xl sm:rounded-3xl overflow-hidden mb-6 sm:mb-8 shadow-xl border border-zinc-200/80 bg-zinc-950">
+              <img
+                src={selectedCat.bannerImage || selectedCat.image}
+                alt={selectedCat.title}
+                className="w-full h-auto aspect-[2/1] sm:aspect-[2.4/1] object-cover block"
+              />
             </div>
+          )}
+
+          {/* 2. CATEGORY TITLE HEADER (MATCHING USER SCREENSHOT) */}
+          <div className="mt-6 sm:mt-10 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight">
+              {selectedCat.title}
+            </h2>
           </div>
 
-          {/* 2. CATEGORY TITLE HEADER (MATCHING IMAGE 2) */}
-          <div className="mt-10 sm:mt-14 mb-6 sm:mb-8 flex items-baseline justify-between border-b border-zinc-100 pb-4">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 uppercase tracking-tight">
-                {selectedCat.title}
-              </h2>
-              <p className="text-zinc-500 text-xs sm:text-sm mt-1">
-                {selectedCatProducts.length} Premium Custom Designs Available
-              </p>
-            </div>
-          </div>
-
-          {/* 3. PRODUCT CARDS 4-COLUMN GRID (MATCHING IMAGE 2) */}
+          {/* 3. PRODUCT CARDS 2-COLUMN MOBILE GRID (MATCHING USER SCREENSHOT) */}
           {selectedCatProducts.length === 0 ? (
             <div className="py-16 text-center border border-dashed border-zinc-200 rounded-2xl my-8">
               <p className="text-zinc-500 font-medium">No products added to this category yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-20">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mb-20">
               {selectedCatProducts.map((prod) => (
                 <div
                   key={prod.id}
                   onClick={() => onSelectProduct && onSelectProduct(prod)}
-                  className="group flex flex-col bg-white rounded-2xl border border-zinc-200/90 hover:border-zinc-400 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="group flex flex-col bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 hover:border-zinc-400 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                 >
                   {/* Image Container with Top-Left Black SALE Badge */}
-                  <div className="relative bg-[#f4f4f5] aspect-[4/5] flex items-center justify-center p-3 sm:p-5 overflow-hidden">
-                    <span className="absolute top-3 left-3 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-xs shadow-xs z-10">
+                  <div className="relative bg-[#f4f4f5] aspect-[4/5] flex items-center justify-center p-2.5 sm:p-5 overflow-hidden">
+                    <span className="absolute top-2.5 left-2.5 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 rounded-xs shadow-xs z-10">
                       {prod.badge || 'SALE'}
                     </span>
                     <img
                       src={prod.image}
                       alt={prod.title}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
                     />
                   </div>
 
                   {/* Product Info Directly Below Image */}
-                  <div className="p-3 sm:p-4 pt-2">
-                    <h3 className="text-xs sm:text-sm font-bold text-zinc-900 group-hover:text-black line-clamp-1">
+                  <div className="p-3 sm:p-4 pt-2.5">
+                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-800 group-hover:text-black line-clamp-1">
                       {prod.title}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1.5 text-xs sm:text-sm">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5 text-xs sm:text-sm">
                       <span className="font-extrabold text-zinc-950">₹{prod.price || 499}</span>
-                      {prod.oldPrice && <span className="text-xs text-zinc-400 line-through">₹{prod.oldPrice}</span>}
-                      {prod.off && <span className="font-bold text-xs text-emerald-600">{prod.off}</span>}
+                      <span className="text-[11px] sm:text-xs text-zinc-400 line-through">₹{prod.oldPrice || 999}</span>
+                      <span className="font-bold text-[11px] sm:text-xs text-emerald-600">{prod.off || '50% off'}</span>
                     </div>
                   </div>
                 </div>
@@ -288,9 +255,9 @@ export default function CategoriesPage({
         /* B. SPLIT-RAIL CATEGORY EXPLORER (MATCHING HOME & USER SCREENSHOT)        */
         /* ========================================================================= */
         <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-row min-h-[calc(100vh-120px)] bg-white border-b border-zinc-200/80">
-          {/* Left Vertical Navigation Rail */}
-          <aside className="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0 bg-white border-r border-zinc-200/90 py-4 sm:py-6">
-            <div className="flex flex-col gap-3 sm:gap-5">
+          {/* Left Vertical Navigation Rail (Zapvi Style) */}
+          <aside className="w-20 sm:w-24 md:w-28 shrink-0 bg-white border-r border-zinc-200 py-3 sm:py-5">
+            <div className="flex flex-col gap-3 sm:gap-4">
               {CATEGORY_SECTIONS.map((sec) => {
                 const isActive = activeSectionId === sec.id;
                 return (
@@ -300,7 +267,7 @@ export default function CategoriesPage({
                       setActiveSectionId(sec.id);
                       setSelectedCat(null);
                     }}
-                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 transition-all cursor-pointer ${isActive
+                    className={`relative w-full flex flex-col items-center justify-center py-1.5 px-1 transition-all cursor-pointer ${isActive
                       ? 'text-[#ea580c]'
                       : 'text-zinc-700 hover:text-black'
                       }`}
@@ -311,7 +278,7 @@ export default function CategoriesPage({
                     )}
 
                     {/* Circular Icon with Orange Ring when Active */}
-                    <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${isActive
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${isActive
                       ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/30 scale-105 shadow-sm bg-white'
                       : 'border border-zinc-200 bg-[#f4f4f6]'
                       }`}>
@@ -323,7 +290,7 @@ export default function CategoriesPage({
                     </div>
 
                     {/* Label below icon */}
-                    <span className={`text-xs sm:text-[13px] tracking-tight mt-1.5 font-bold text-center leading-tight line-clamp-2 px-1 ${isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
+                    <span className={`text-[11px] sm:text-xs tracking-tight mt-1 font-bold text-center leading-tight line-clamp-2 px-1 ${isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
                       }`}>
                       {sec.shortName || sec.name}
                     </span>
@@ -334,25 +301,28 @@ export default function CategoriesPage({
           </aside>
 
           {/* Right Circular Categories Area */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 bg-white flex flex-col justify-start">
-            {/* Section Subtitle */}
-            <div className="mb-5 sm:mb-7">
-              <p className="text-zinc-500 text-xs sm:text-sm font-medium">
+          <main className="flex-1 p-3 sm:p-5 lg:p-7 min-w-0 bg-white flex flex-col justify-start">
+            {/* Section Headline matching Zapvi screenshot */}
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-base sm:text-lg md:text-xl font-black text-zinc-900 uppercase tracking-wide leading-tight">
+                {currentSection.headline || 'READY DESIGNS AND TRENDY CASE'}
+              </h2>
+              <p className="text-zinc-500 text-xs sm:text-sm font-medium mt-0.5">
                 {currentSection.subtitle}
               </p>
             </div>
 
-            {/* Circular Category Bubbles matching User Screenshot */}
+            {/* Circular Category Bubbles matching User Screenshot: 3 columns on mobile */}
             {displayCategories.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6 sm:gap-x-6 sm:gap-y-8">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-2.5 gap-y-5 sm:gap-x-4 sm:gap-y-6">
                 {displayCategories.map((cat, idx) => (
                   <div
                     key={cat.id || idx}
                     onClick={() => handleCategoryClick(cat)}
-                    className="group flex flex-col items-center cursor-pointer select-none"
+                    className="group flex flex-col items-center cursor-pointer select-none text-center"
                   >
                     {/* Circular Bubble Card */}
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-white border border-zinc-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.03)] group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] group-hover:ring-2 group-hover:ring-[#ea580c]/30 transition-all duration-300 p-1 flex items-center justify-center">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-white border border-zinc-200 shadow-xs group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] group-hover:ring-2 group-hover:ring-[#ea580c]/30 transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center">
                       <img
                         src={cat.image}
                         alt={cat.title}
@@ -362,7 +332,7 @@ export default function CategoriesPage({
                     </div>
 
                     {/* Title Directly Underneath */}
-                    <h4 className="mt-2 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[100px] sm:max-w-[125px] transition-colors">
+                    <h4 className="mt-1.5 sm:mt-2 text-center text-[11px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
                       {cat.title}
                     </h4>
                   </div>

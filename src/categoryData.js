@@ -55,7 +55,7 @@ export let API_BASE = (typeof window !== 'undefined' && (window.location.hostnam
 // Resilient API caller with instant local attempt and automatic remote fallback
 export async function apiFetch(path, options = {}) {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  
+
   // 1. Try local port 8081 first if on localhost with 2s timeout
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     try {
@@ -193,10 +193,10 @@ export function getStoredProducts(categoryId = null) {
 // Asynchronous fetch from backend (clean GET only - NEVER auto-posts)
 export async function fetchProductsFromApi(categoryId = null) {
   try {
-    const url = (categoryId && categoryId !== 'all') 
+    const url = (categoryId && categoryId !== 'all')
       ? `/products?categoryId=${encodeURIComponent(categoryId)}`
       : '/products';
-    
+
     const res = await apiFetch(url);
     if (!res.ok) throw new Error('Failed to fetch products');
     const serverProds = await res.json();
