@@ -94,6 +94,9 @@ export default function CategoriesPage({
         activeSectionId === 'laptop_skin' ? skinCategories :
           filteredCategories;
 
+  const displayCategories = activeCategories.length > 0 ? activeCategories : allWithSections;
+  const currentSection = CATEGORY_SECTIONS.find(s => s.id === activeSectionId) || CATEGORY_SECTIONS[0];
+
   const handleCategoryClick = (cat) => {
     setSelectedCat(cat);
     if (cat.section && cat.section !== activeSectionId) {
@@ -294,45 +297,12 @@ export default function CategoriesPage({
         </div>
       ) : (
         /* ========================================================================= */
-        /* B. SPLIT-RAIL CATEGORY EXPLORER BROWSER (POPULAR / COVERS / GLASS / SKIN) */
+        /* B. SPLIT-RAIL CATEGORY EXPLORER (MATCHING HOME & USER SCREENSHOT)        */
         /* ========================================================================= */
-        <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-row min-h-[calc(100vh-120px)]">
-          {/* Left Vertical Rail */}
-          <aside className="w-[82px] sm:w-24 md:w-36 lg:w-44 shrink-0 bg-white border-r border-zinc-200/80 sticky top-[68px] z-20 self-start h-[calc(100vh-68px)] overflow-y-auto scrollbar-none py-2.5 sm:py-4">
-            <div className="flex flex-col gap-1 sm:gap-2">
-              <button
-                onClick={() => {
-                  setActiveSectionId('all');
-                  setSelectedCat(null);
-                }}
-                className={`relative w-full flex flex-col items-center justify-center py-2 px-1 sm:p-3 transition-all cursor-pointer ${activeSectionId === 'all'
-                    ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
-                    : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
-                  }`}
-              >
-                {activeSectionId === 'all' && (
-                  <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
-                )}
-                <div
-                  className={`w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${activeSectionId === 'all'
-                      ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
-                      : 'border border-zinc-200 bg-[#f4f4f6]'
-                    }`}
-                >
-                  <img
-                    src="/images/logo-mark-ayXhBs9R.png"
-                    alt="Popular"
-                    className="w-full h-full object-cover rounded-full mix-blend-multiply"
-                  />
-                </div>
-                <span
-                  className={`text-[9px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${activeSectionId === 'all' ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                    }`}
-                >
-                  Popular
-                </span>
-              </button>
-
+        <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-row min-h-[calc(100vh-120px)] bg-white border-b border-zinc-200/80">
+          {/* Left Vertical Navigation Rail */}
+          <aside className="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0 bg-white border-r border-zinc-200/90 py-4 sm:py-6">
+            <div className="flex flex-col gap-3 sm:gap-5">
               {CATEGORY_SECTIONS.map((sec) => {
                 const isActive = activeSectionId === sec.id;
                 return (
@@ -342,30 +312,34 @@ export default function CategoriesPage({
                       setActiveSectionId(sec.id);
                       setSelectedCat(null);
                     }}
-                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 sm:p-3 transition-all cursor-pointer ${isActive
-                        ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
-                        : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
-                      }`}
+                    className={`relative w-full flex flex-col items-center justify-center py-2 px-1 transition-all cursor-pointer ${
+                      isActive
+                        ? 'text-[#ea580c]'
+                        : 'text-zinc-700 hover:text-black'
+                    }`}
                   >
+                    {/* Active Orange Bar on Left Edge */}
                     {isActive && (
                       <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
                     )}
-                    <div
-                      className={`w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${isActive
-                          ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
-                          : 'border border-zinc-200 bg-[#f4f4f6]'
-                        }`}
-                    >
+
+                    {/* Circular Icon with Orange Ring when Active */}
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${
+                      isActive
+                        ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/30 scale-105 shadow-sm bg-white'
+                        : 'border border-zinc-200 bg-[#f4f4f6]'
+                    }`}>
                       <img
                         src={sec.icon}
                         alt={sec.name}
                         className="w-full h-full object-cover rounded-full"
                       />
                     </div>
-                    <span
-                      className={`text-[9px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                        }`}
-                    >
+
+                    {/* Label below icon */}
+                    <span className={`text-xs sm:text-[13px] tracking-tight mt-1.5 font-bold text-center leading-tight line-clamp-2 px-1 ${
+                      isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
+                    }`}>
                       {sec.shortName || sec.name}
                     </span>
                   </button>
@@ -374,63 +348,48 @@ export default function CategoriesPage({
             </div>
           </aside>
 
-          {/* Right Area: Category Circles */}
-          <main className="flex-1 p-3 sm:p-6 lg:p-8 min-w-0 bg-[#fafafa]/50">
-            {/* Search Bar */}
-            <div className="mb-6 relative max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search phone models, categories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-full border border-zinc-200 bg-white text-xs sm:text-sm focus:outline-hidden focus:border-black transition-colors"
-              />
+          {/* Right Circular Categories Area */}
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 bg-white flex flex-col justify-start">
+            {/* Section Subtitle */}
+            <div className="mb-5 sm:mb-7">
+              <p className="text-zinc-500 text-xs sm:text-sm font-medium">
+                {currentSection.subtitle}
+              </p>
             </div>
 
-            {/* Circular Category Grid */}
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight">
-                  {activeSectionId === 'all'
-                    ? 'All Categories'
-                    : CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name}
-                </h2>
-                <span className="text-xs text-zinc-500">
-                  {activeCategories.length} categories
-                </span>
-              </div>
-
-              {activeCategories.length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-6">
-                  {activeCategories.map((cat, idx) => (
-                    <div
-                      key={cat.id || idx}
-                      onClick={() => handleCategoryClick(cat)}
-                      className="group flex flex-col items-center cursor-pointer select-none"
-                    >
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-white border border-zinc-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.03)] group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center">
-                        <img
-                          src={cat.image}
-                          alt={cat.title}
-                          className="w-full h-full object-cover rounded-full"
-                          loading="lazy"
-                        />
-                      </div>
-                      <h4 className="mt-2 text-center text-[10px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
-                        {cat.title}
-                      </h4>
+            {/* Circular Category Bubbles matching User Screenshot */}
+            {displayCategories.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6 sm:gap-x-6 sm:gap-y-8">
+                {displayCategories.map((cat, idx) => (
+                  <div
+                    key={cat.id || idx}
+                    onClick={() => handleCategoryClick(cat)}
+                    className="group flex flex-col items-center cursor-pointer select-none"
+                  >
+                    {/* Circular Bubble Card */}
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-white border border-zinc-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.03)] group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] group-hover:ring-2 group-hover:ring-[#ea580c]/30 transition-all duration-300 p-1 flex items-center justify-center">
+                      <img
+                        src={cat.image}
+                        alt={cat.title}
+                        className="w-full h-full object-cover rounded-full"
+                        loading="lazy"
+                      />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-12 text-center border border-dashed border-zinc-200 rounded-2xl">
-                  <p className="text-zinc-400 text-xs sm:text-sm">
-                    No categories found.
-                  </p>
-                </div>
-              )}
-            </div>
+
+                    {/* Title Directly Underneath */}
+                    <h4 className="mt-2 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[100px] sm:max-w-[125px] transition-colors">
+                      {cat.title}
+                    </h4>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center border border-dashed border-zinc-200 rounded-2xl">
+                <p className="text-zinc-400 text-xs sm:text-sm">
+                  No categories in this section yet.
+                </p>
+              </div>
+            )}
           </main>
         </div>
       )}
