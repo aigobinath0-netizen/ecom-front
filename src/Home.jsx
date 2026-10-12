@@ -1,34 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, ShieldCheck, Headphones } from 'lucide-react';
-import { 
-  CATEGORY_SECTIONS, 
-  getStoredCategories, 
-  fetchCategoriesFromApi, 
-  normalizeCategorySection 
-} from './categoryData';
+import { Truck, ShieldCheck, Headphones, Star, ArrowRight } from 'lucide-react';
+import { getStoredCategories, getStoredProducts, fetchCategoriesFromApi, fetchProductsFromApi } from './categoryData';
 import heroVideo from './assets/watermark-removed (1).mp4';
 
 export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct }) {
   const [categories, setCategories] = useState(getStoredCategories());
-  const [activeSectionId, setActiveSectionId] = useState('phone_cover');
+  const [popularProducts, setPopularProducts] = useState(getStoredProducts().slice(0, 8));
+  const [allProducts, setAllProducts] = useState(getStoredProducts());
 
   useEffect(() => {
     // 1. Initial cached state
     setCategories(getStoredCategories());
+    const cachedProds = getStoredProducts();
+    setAllProducts(cachedProds);
+    setPopularProducts(cachedProds.slice(0, 8));
 
     // 2. Fetch live data from server
     fetchCategoriesFromApi().then(cats => {
       if (Array.isArray(cats)) setCategories(cats);
     });
+    fetchProductsFromApi().then(prods => {
+      if (Array.isArray(prods)) {
+        setAllProducts(prods);
+        setPopularProducts(prods.slice(0, 8));
+      }
+    });
   }, []);
-
-  const allWithSections = categories.map(c => ({
-    ...c,
-    section: normalizeCategorySection(c)
-  }));
-
-  const activeCategories = allWithSections.filter(c => c.section === activeSectionId);
-  const currentSection = CATEGORY_SECTIONS.find(s => s.id === activeSectionId) || CATEGORY_SECTIONS[0];
 
   return (
     <main className="flex-1 bg-white text-zinc-900 pb-20">
@@ -94,15 +91,15 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
         </div>
       </section>
 
-      {/* 4. SPLIT-RAIL CIRCULAR CATEGORY EXPLORER (MATCHING FIRST IMAGE) */}
+      {/* 4. FEATURED CATEGORIES GRID (MATCHING ZAPVI CLEAN 5-COLUMN DESIGN) */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12">
-        <div className="flex items-end justify-between mb-4 sm:mb-6">
+        <div className="flex items-end justify-between mb-5 sm:mb-7">
           <div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black tracking-tight">
-              Explore Categories
+              Phone Cases & Categories
             </h2>
             <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">
-              Select a category to customize phone cases, temper glass & skins
+              Customized for iPhone, Samsung, OnePlus & all popular devices
             </p>
           </div>
 
@@ -114,107 +111,194 @@ export default function Home({ setCurrentPage, onSelectCategory, onSelectProduct
             }}
             className="text-xs font-bold text-zinc-900 hover:text-zinc-600 underline underline-offset-4 cursor-pointer"
           >
-            View all &rarr;
+            View all categories &rarr;
           </button>
         </div>
 
-        {/* Split-Rail Layout Container matching First Image */}
-        <div className="flex flex-row border border-zinc-200/90 rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-xs">
-          
-          {/* Left Vertical Navigation Rail */}
-          <aside className="w-[82px] sm:w-28 md:w-36 lg:w-44 shrink-0 bg-white border-r border-zinc-200/80 py-3 sm:py-5">
-            <div className="flex flex-col gap-1 sm:gap-2">
-              {CATEGORY_SECTIONS.map((sec) => {
-                const isActive = activeSectionId === sec.id;
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => setActiveSectionId(sec.id)}
-                    className={`relative w-full flex flex-col items-center justify-center py-2.5 px-1 sm:p-3 transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
-                        : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
-                    }`}
-                  >
-                    {/* Active Orange Bar on Left Edge */}
-                    {isActive && (
-                      <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
-                    )}
-
-                    {/* Circular Icon with Orange Ring when Active */}
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${
-                      isActive
-                        ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
-                        : 'border border-zinc-200 bg-[#f4f4f6]'
-                    }`}>
-                      <img
-                        src={sec.icon}
-                        alt={sec.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </div>
-
-                    {/* Label below icon */}
-                    <span className={`text-[10px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${
-                      isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                    }`}>
-                      {sec.shortName || sec.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-
-          {/* Right Circular Categories Area */}
-          <div className="flex-1 p-3 sm:p-6 lg:p-8 min-w-0 bg-[#fafafa]/40 flex flex-col justify-start">
-            {/* Section Subtitle */}
-            <div className="mb-4 sm:mb-6">
-              <p className="text-zinc-500 text-xs sm:text-[13px] font-medium">
-                {currentSection.subtitle}
-              </p>
-            </div>
-
-            {/* Circular Category Bubbles matching First Image */}
-            {activeCategories.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2.5 gap-y-4 sm:gap-5 md:gap-7">
-                {activeCategories.map((cat, idx) => (
-                  <div
-                    key={cat.id || idx}
-                    onClick={() => {
-                      if (onSelectCategory) onSelectCategory(cat);
-                      else if (setCurrentPage) setCurrentPage('categories');
-                    }}
-                    className="group flex flex-col items-center cursor-pointer select-none"
-                  >
-                    {/* Circular Bubble Card */}
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-white border border-zinc-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.03)] group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center">
-                      <img
-                        src={cat.image}
-                        alt={cat.title}
-                        className="w-full h-full object-cover rounded-full"
-                        loading="lazy"
-                      />
-                    </div>
-
-                    {/* Title Directly Underneath */}
-                    <h4 className="mt-2 text-center text-[10px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
-                      {cat.title}
-                    </h4>
-                  </div>
-                ))}
+        {/* 5-Column Grid Matching Zapvi Reference */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5 md:gap-6">
+          {categories.map((cat, idx) => (
+            <div
+              key={cat.id || idx}
+              onClick={() => {
+                if (onSelectCategory) onSelectCategory(cat);
+                else if (setCurrentPage) setCurrentPage('categories');
+              }}
+              className="group flex flex-col items-center cursor-pointer select-none"
+            >
+              {/* Rounded Square Image Box */}
+              <div className="w-full aspect-square rounded-2xl sm:rounded-[22px] overflow-hidden bg-[#f4f4f6] relative border border-zinc-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] group-hover:shadow-md transition-all duration-300">
+                <img
+                  alt={cat.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  src={cat.image}
+                  loading="lazy"
+                />
               </div>
-            ) : (
-              <div className="py-12 text-center border border-dashed border-zinc-200 rounded-2xl">
-                <p className="text-zinc-400 text-xs sm:text-sm">
-                  No categories in this section yet.
-                </p>
-              </div>
-            )}
-          </div>
 
+              {/* Title Directly Underneath */}
+              <h3 className="mt-2.5 sm:mt-3 text-center text-xs sm:text-[13px] md:text-sm font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 transition-colors px-1">
+                {cat.title}
+              </h3>
+            </div>
+          ))}
         </div>
       </section>
+
+      {/* 5. TRENDING BESTSELLERS GRID (SCREENSHOT 2 STYLE) */}
+      {popularProducts.length > 0 && (
+        <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-16 sm:mt-24">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-black uppercase tracking-tight">
+              Trending Bestsellers
+            </h2>
+            <p className="text-zinc-500 text-xs sm:text-sm mt-1 uppercase tracking-wider">
+              Most loved custom phone cases across India
+            </p>
+          </div>
+
+          {/* 4 Column Product Grid Matching Screenshot 2 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {popularProducts.map((prod, idx) => (
+              <div
+                key={prod.id}
+                onClick={() => onSelectProduct && onSelectProduct(prod)}
+                className="group flex flex-col cursor-pointer"
+              >
+                {/* Studio Grey Image Container with Badges */}
+                <div className="relative bg-[#f4f4f5] rounded-lg overflow-hidden aspect-square sm:aspect-[4/5] flex items-center justify-center p-4">
+                  {/* Badge in Top Left: Green NEW or Gold BEST SELLER */}
+                  <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
+                    {idx % 2 === 0 ? (
+                      <span className="bg-[#16a34a] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs shadow-xs">
+                        NEW
+                      </span>
+                    ) : (
+                      <span className="bg-[#ca8a04] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs shadow-xs">
+                        BEST SELLER
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Product Image */}
+                  <img
+                    alt={prod.title}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    src={prod.image}
+                  />
+                </div>
+
+                {/* Text Info Below Image */}
+                <div className="pt-3 text-center">
+                  <h3 className="text-xs sm:text-sm font-medium text-zinc-900 group-hover:text-black line-clamp-1">
+                    {prod.title}
+                  </h3>
+
+                  {/* Gold Star Rating */}
+                  <div className="flex items-center justify-center gap-1 mt-1 text-[#f59e0b] text-xs">
+                    <span>★★★★★</span>
+                    <span className="text-zinc-400 text-[11px] font-normal">(28)</span>
+                  </div>
+
+                  {/* Price in clean black text */}
+                  <p className="text-xs sm:text-sm font-semibold text-zinc-950 mt-1">
+                    from Rs. {prod.price}.00
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Minimalist Black VIEW ALL Button (Screenshot 2) */}
+          <div className="text-center mt-12 mb-6">
+            <button
+              onClick={() => {
+                if (onSelectCategory) onSelectCategory('all');
+                else if (setCurrentPage) setCurrentPage('categories');
+              }}
+              className="bg-black hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-[0.2em] px-10 py-3.5 transition-colors cursor-pointer"
+            >
+              VIEW ALL
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* 6. CATEGORY-WISE PRODUCT SECTIONS (MATCHING SCREENSHOT 2) */}
+      {categories.map((category) => {
+        const categoryProducts = allProducts.filter(p => p.categoryId === category.id);
+        if (categoryProducts.length === 0) return null;
+
+        return (
+          <section key={category.id} className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-16 sm:mt-20">
+            <div className="flex items-end justify-between border-b border-zinc-200 pb-3 mb-8">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-black uppercase tracking-tight">
+                  {category.title}
+                </h2>
+                <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">
+                  Starting from Rs. 499.00
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="text-xs font-bold text-zinc-900 hover:text-zinc-600 uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                onClick={() => {
+                  if (onSelectCategory) onSelectCategory(category);
+                  else if (setCurrentPage) setCurrentPage('categories');
+                }}
+              >
+                <span>View all</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              {categoryProducts.map((prod, idx) => (
+                <div
+                  key={prod.id}
+                  onClick={() => onSelectProduct && onSelectProduct(prod)}
+                  className="group flex flex-col cursor-pointer"
+                >
+                  <div className="relative bg-[#f4f4f5] rounded-lg overflow-hidden aspect-square sm:aspect-[4/5] flex items-center justify-center p-4">
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
+                      {idx % 2 === 0 ? (
+                        <span className="bg-[#16a34a] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs">
+                          NEW
+                        </span>
+                      ) : (
+                        <span className="bg-[#ca8a04] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs">
+                          BEST SELLER
+                        </span>
+                      )}
+                    </div>
+
+                    <img
+                      alt={prod.title}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      src={prod.image}
+                    />
+                  </div>
+
+                  <div className="pt-3 text-center">
+                    <h3 className="text-xs sm:text-sm font-medium text-zinc-900 group-hover:text-black line-clamp-1">
+                      {prod.title}
+                    </h3>
+                    <div className="flex items-center justify-center gap-1 mt-1 text-[#f59e0b] text-xs">
+                      <span>★★★★★</span>
+                      <span className="text-zinc-400 text-[11px] font-normal">(19)</span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-zinc-950 mt-1">
+                      Rs. {prod.price}.00
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </main>
   );
 }
