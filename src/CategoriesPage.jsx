@@ -96,34 +96,34 @@ export default function CategoriesPage({
         Your Design. Your Style. Your Pravar.
       </div>
 
-      {/* Main Split-View Container */}
-      <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col md:flex-row">
+      {/* Main Split-View Container: ALWAYS flex-row (vertical sidebar on left + content on right) both on mobile and desktop! */}
+      <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-row min-h-[calc(100vh-120px)]">
         
-        {/* 2. LEFT SIDEBAR NAVIGATION RAIL (MATCHING ZAPVI SCREENSHOT) */}
-        <aside className="w-full md:w-36 lg:w-44 shrink-0 bg-white border-b md:border-b-0 md:border-r border-zinc-200/80 sticky top-[68px] z-20 self-start">
-          <div className="flex md:flex-col overflow-x-auto md:overflow-y-auto py-2 md:py-4 scrollbar-none">
+        {/* 2. LEFT SIDEBAR NAVIGATION RAIL (MATCHING ZAPVI MOBILE & DESKTOP SCREENSHOT) */}
+        <aside className="w-[82px] sm:w-24 md:w-36 lg:w-44 shrink-0 bg-white border-r border-zinc-200/80 sticky top-[68px] z-20 self-start h-[calc(100vh-68px)] overflow-y-auto scrollbar-none py-2.5 sm:py-4">
+          <div className="flex flex-col gap-1 sm:gap-2">
             
             {/* Tab: Popular / All */}
             <button
-              onClick={() => setActiveSectionId('all')}
-              className={`relative flex flex-col items-center justify-center p-3 sm:p-4 min-w-[90px] md:min-w-0 transition-all cursor-pointer ${
+              onClick={() => {
+                setActiveSectionId('all');
+                setSelectedCat(null);
+              }}
+              className={`relative w-full flex flex-col items-center justify-center py-2.5 px-1 sm:p-3 transition-all cursor-pointer ${
                 activeSectionId === 'all'
                   ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
                   : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
               }`}
             >
-              {/* Active Orange Bar (Left edge on desktop, bottom edge on mobile) */}
+              {/* Active Orange Bar on Left Edge */}
               {activeSectionId === 'all' && (
-                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#ea580c] hidden md:block rounded-r" />
-              )}
-              {activeSectionId === 'all' && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#ea580c] md:hidden" />
+                <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
               )}
 
               {/* Circular Icon */}
-              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full p-1 overflow-hidden transition-transform duration-300 ${
+              <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${
                 activeSectionId === 'all'
-                  ? 'ring-2 ring-[#ea580c] scale-105 shadow-md bg-white'
+                  ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
                   : 'border border-zinc-200 bg-[#f4f4f6]'
               }`}>
                 <img
@@ -132,7 +132,7 @@ export default function CategoriesPage({
                   className="w-full h-full object-cover rounded-full mix-blend-multiply"
                 />
               </div>
-              <span className={`text-[11px] sm:text-xs uppercase tracking-wider mt-2 font-bold text-center leading-tight ${
+              <span className={`text-[10px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${
                 activeSectionId === 'all' ? 'text-[#ea580c] font-black' : 'text-zinc-700'
               }`}>
                 Popular
@@ -140,30 +140,30 @@ export default function CategoriesPage({
             </button>
 
             {/* 3 Main Sections Defined by User */}
-            {CATEGORY_SECTIONS.map((sec, idx) => {
+            {CATEGORY_SECTIONS.map((sec) => {
               const isActive = activeSectionId === sec.id;
               return (
                 <button
                   key={sec.id}
-                  onClick={() => setActiveSectionId(sec.id)}
-                  className={`relative flex flex-col items-center justify-center p-3 sm:p-4 min-w-[100px] md:min-w-0 transition-all cursor-pointer ${
+                  onClick={() => {
+                    setActiveSectionId(sec.id);
+                    setSelectedCat(null);
+                  }}
+                  className={`relative w-full flex flex-col items-center justify-center py-2.5 px-1 sm:p-3 transition-all cursor-pointer ${
                     isActive
                       ? 'bg-amber-50/50 md:bg-transparent text-[#ea580c]'
                       : 'text-zinc-600 hover:text-black hover:bg-zinc-50'
                   }`}
                 >
-                  {/* Active Indicator Bar */}
+                  {/* Active Indicator Bar on Left Edge */}
                   {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#ea580c] hidden md:block rounded-r" />
-                  )}
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#ea580c] md:hidden" />
+                    <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
                   )}
 
                   {/* Circular Icon */}
-                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full p-1 overflow-hidden transition-transform duration-300 ${
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 sm:p-1 overflow-hidden transition-transform duration-300 ${
                     isActive
-                      ? 'ring-2 ring-[#ea580c] scale-105 shadow-md bg-white'
+                      ? 'ring-2 ring-[#ea580c] scale-105 shadow-xs bg-white'
                       : 'border border-zinc-200 bg-[#f4f4f6]'
                   }`}>
                     <img
@@ -174,10 +174,10 @@ export default function CategoriesPage({
                   </div>
 
                   {/* Label */}
-                  <span className={`text-[11px] sm:text-xs uppercase tracking-wider mt-2 font-bold text-center leading-tight line-clamp-2 px-1 ${
+                  <span className={`text-[10px] sm:text-xs tracking-tight mt-1 sm:mt-1.5 font-bold text-center leading-tight line-clamp-2 px-0.5 ${
                     isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
                   }`}>
-                    {sec.name}
+                    {sec.shortName || sec.name}
                   </span>
                 </button>
               );
@@ -186,53 +186,53 @@ export default function CategoriesPage({
         </aside>
 
         {/* 3. RIGHT CONTENT AREA (ZAPVI CIRCULAR CATEGORIES & PRODUCTS) */}
-        <main className="flex-1 p-4 sm:p-8 lg:p-10 min-w-0">
+        <main className="flex-1 p-2.5 sm:p-6 lg:p-8 min-w-0 overflow-y-auto pb-24 sm:pb-16">
           
           {/* Search Bar inside Categories */}
-          <div className="mb-6 max-w-md">
+          <div className="mb-4 sm:mb-6 max-w-md">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <input
                 type="text"
-                placeholder="Search categories (e.g. Clear, Glass, Skin)..."
+                placeholder="Search categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#f4f4f6] border border-zinc-200/80 rounded-full pl-10 pr-4 py-2 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-white transition-all shadow-xs"
+                className="w-full bg-[#f4f4f6] border border-zinc-200/80 rounded-full pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm outline-none focus:border-zinc-900 focus:bg-white transition-all shadow-xs"
               />
             </div>
           </div>
 
           {/* VIEW: Popular / All Sections */}
           {activeSectionId === 'all' && (
-            <div className="space-y-12">
+            <div className="space-y-8 sm:space-y-12">
               
               {/* TOP PICKS / 1. PHONE COVER */}
               <section>
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-3 sm:mb-5">
                   <div>
-                    <h2 className="text-xs sm:text-sm font-black tracking-widest text-zinc-400 uppercase">
-                      TOP PICKS • PHONE COVER
+                    <h2 className="text-[10px] sm:text-xs font-black tracking-widest text-zinc-400 uppercase">
+                      READY DESIGNS • PHONE COVER
                     </h2>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 mt-0.5">
-                      Customized Phone Cases & Covers
+                    <h3 className="text-sm sm:text-lg font-extrabold text-zinc-950 mt-0.5">
+                      Trendy Cases & Covers
                     </h3>
                   </div>
                   <button
                     onClick={() => setActiveSectionId('phone_cover')}
-                    className="text-xs font-bold text-[#ea580c] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] sm:text-xs font-bold text-[#ea580c] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    View Section <ArrowRight size={13} />
+                    View All <ArrowRight size={12} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 sm:gap-7">
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2 gap-y-3.5 sm:gap-4 md:gap-6">
                   {coverCategories.map((cat) => (
                     <div
                       key={cat.id}
                       onClick={() => handleCategoryClick(cat)}
                       className="group flex flex-col items-center cursor-pointer select-none"
                     >
-                      <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-1 flex items-center justify-center">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center">
                         <img
                           src={cat.image}
                           alt={cat.title}
@@ -240,7 +240,7 @@ export default function CategoriesPage({
                           loading="lazy"
                         />
                       </div>
-                      <h4 className="mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[120px] transition-colors">
+                      <h4 className="mt-1.5 text-center text-[10px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
                         {cat.title}
                       </h4>
                     </div>
@@ -249,32 +249,32 @@ export default function CategoriesPage({
               </section>
 
               {/* 2. PHONE TEMPER GLASS */}
-              <section className="pt-6 border-t border-zinc-100">
-                <div className="flex items-center justify-between mb-5">
+              <section className="pt-5 sm:pt-6 border-t border-zinc-100">
+                <div className="flex items-center justify-between mb-3 sm:mb-5">
                   <div>
-                    <h2 className="text-xs sm:text-sm font-black tracking-widest text-zinc-400 uppercase">
-                      SHOP BY CATEGORY • PHONE TEMPER GLASS
+                    <h2 className="text-[10px] sm:text-xs font-black tracking-widest text-zinc-400 uppercase">
+                      SCREEN & LENS PROTECTORS
                     </h2>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 mt-0.5">
-                      9H Strong Screen & Lens Protectors
+                    <h3 className="text-sm sm:text-lg font-extrabold text-zinc-950 mt-0.5">
+                      9H Strong Temper Glass
                     </h3>
                   </div>
                   <button
                     onClick={() => setActiveSectionId('temper_glass')}
-                    className="text-xs font-bold text-[#ea580c] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] sm:text-xs font-bold text-[#ea580c] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    View Section <ArrowRight size={13} />
+                    View All <ArrowRight size={12} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 sm:gap-7">
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2 gap-y-3.5 sm:gap-4 md:gap-6">
                   {glassCategories.map((cat) => (
                     <div
                       key={cat.id}
                       onClick={() => handleCategoryClick(cat)}
                       className="group flex flex-col items-center cursor-pointer select-none"
                     >
-                      <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-1 flex items-center justify-center">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center">
                         <img
                           src={cat.image}
                           alt={cat.title}
@@ -282,7 +282,7 @@ export default function CategoriesPage({
                           loading="lazy"
                         />
                       </div>
-                      <h4 className="mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[120px] transition-colors">
+                      <h4 className="mt-1.5 text-center text-[10px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
                         {cat.title}
                       </h4>
                     </div>
@@ -291,32 +291,32 @@ export default function CategoriesPage({
               </section>
 
               {/* 3. PHONE AND LAPTOP SKIN */}
-              <section className="pt-6 border-t border-zinc-100">
-                <div className="flex items-center justify-between mb-5">
+              <section className="pt-5 sm:pt-6 border-t border-zinc-100">
+                <div className="flex items-center justify-between mb-3 sm:mb-5">
                   <div>
-                    <h2 className="text-xs sm:text-sm font-black tracking-widest text-zinc-400 uppercase">
-                      SHOP BY CATEGORY • PHONE & LAPTOP SKIN
+                    <h2 className="text-[10px] sm:text-xs font-black tracking-widest text-zinc-400 uppercase">
+                      PHONE & LAPTOP SKIN
                     </h2>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 mt-0.5">
-                      Textured Wraps & Precision Skins
+                    <h3 className="text-sm sm:text-lg font-extrabold text-zinc-950 mt-0.5">
+                      Textured Wraps & Skins
                     </h3>
                   </div>
                   <button
                     onClick={() => setActiveSectionId('laptop_skin')}
-                    className="text-xs font-bold text-[#ea580c] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] sm:text-xs font-bold text-[#ea580c] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    View Section <ArrowRight size={13} />
+                    View All <ArrowRight size={12} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 sm:gap-7">
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2 gap-y-3.5 sm:gap-4 md:gap-6">
                   {skinCategories.map((cat) => (
                     <div
                       key={cat.id}
                       onClick={() => handleCategoryClick(cat)}
                       className="group flex flex-col items-center cursor-pointer select-none"
                     >
-                      <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-1 flex items-center justify-center">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center">
                         <img
                           src={cat.image}
                           alt={cat.title}
@@ -324,7 +324,7 @@ export default function CategoriesPage({
                           loading="lazy"
                         />
                       </div>
-                      <h4 className="mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[120px] transition-colors">
+                      <h4 className="mt-1.5 text-center text-[10px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
                         {cat.title}
                       </h4>
                     </div>
@@ -338,27 +338,24 @@ export default function CategoriesPage({
           {/* VIEW: Single Selected Section (Phone Cover, Temper Glass, or Laptop Skin) */}
           {activeSectionId !== 'all' && (
             <div>
-              {/* Header */}
-              <div className="mb-8 pb-4 border-b border-zinc-100">
-                <span className="text-[11px] font-black tracking-widest text-[#ea580c] uppercase bg-amber-50 px-2.5 py-1 rounded-md">
-                  Section #{activeSectionId === 'phone_cover' ? '1' : activeSectionId === 'temper_glass' ? '2' : '3'}
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-black mt-2 tracking-tight">
-                  {CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name}
-                </h1>
-                <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">
+              {/* Header (Matching Zapvi: READY DESIGNS AND TRENDY CASE) */}
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-zinc-700">
+                  {activeSectionId === 'phone_cover'
+                    ? 'READY DESIGNS AND TRENDY CASE'
+                    : activeSectionId === 'temper_glass'
+                    ? 'STRONG 9H SCREEN & LENS PROTECTORS'
+                    : 'TEXTURED WRAPS & PRECISION SKINS'}
+                </h2>
+                <p className="text-zinc-400 text-[11px] sm:text-xs mt-0.5 hidden sm:block">
                   {CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.subtitle}
                 </p>
               </div>
 
-              {/* Category Circles Grid */}
-              <div className="mb-14">
-                <h2 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-6">
-                  EXPLORE {CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name} CATEGORIES
-                </h2>
-
+              {/* Category Circles 3-Column Grid on Mobile */}
+              <div className="mb-10 sm:mb-14">
                 {activeCategories.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 sm:gap-7">
+                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2 gap-y-3.5 sm:gap-4 md:gap-6">
                     {activeCategories.map((cat) => (
                       <div
                         key={cat.id}
@@ -366,7 +363,9 @@ export default function CategoriesPage({
                         className="group flex flex-col items-center cursor-pointer select-none"
                       >
                         {/* Circular Zapvi Card */}
-                        <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-[#f4f4f6] border border-zinc-200/80 shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-1 flex items-center justify-center">
+                        <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-[#f4f4f6] border shadow-xs group-hover:shadow-md group-hover:scale-105 transition-all duration-300 p-0.5 sm:p-1 flex items-center justify-center ${
+                          selectedCat?.id === cat.id ? 'ring-2 ring-[#ea580c] border-[#ea580c]' : 'border-zinc-200/80'
+                        }`}>
                           <img
                             src={cat.image}
                             alt={cat.title}
@@ -376,18 +375,18 @@ export default function CategoriesPage({
                         </div>
 
                         {/* Title */}
-                        <h4 className="mt-2.5 text-center text-xs sm:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[120px] transition-colors">
+                        <h4 className="mt-1.5 text-center text-[10px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-[85px] sm:max-w-[110px] transition-colors">
                           {cat.title}
                         </h4>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-12 px-6 border-2 border-dashed border-zinc-200 rounded-2xl text-center">
-                    <p className="text-zinc-500 font-semibold text-sm">
+                  <div className="py-10 px-4 border-2 border-dashed border-zinc-200 rounded-2xl text-center">
+                    <p className="text-zinc-500 font-semibold text-xs sm:text-sm">
                       No categories added in this section yet.
                     </p>
-                    <p className="text-zinc-400 text-xs mt-1">
+                    <p className="text-zinc-400 text-[11px] mt-1">
                       You can add new categories anytime from the Admin panel!
                     </p>
                   </div>
@@ -395,26 +394,26 @@ export default function CategoriesPage({
               </div>
 
               {/* Products in this Section or Selected Category */}
-              <div className="pt-8 border-t border-zinc-100" id="category-products-section">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div className="pt-6 sm:pt-8 border-t border-zinc-100" id="category-products-section">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 sm:mb-6">
                   <div>
                     {selectedCat ? (
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-[#ea580c] px-2.5 py-0.5 rounded-full">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-amber-100 text-[#ea580c] px-2 py-0.5 rounded-full">
                           Category: {selectedCat.title}
                         </span>
                         <button
                           onClick={() => setSelectedCat(null)}
-                          className="text-xs font-semibold text-zinc-500 hover:text-black underline cursor-pointer"
+                          className="text-[11px] sm:text-xs font-semibold text-zinc-500 hover:text-black underline cursor-pointer"
                         >
-                          View all in this section
+                          Show all
                         </button>
                       </div>
                     ) : null}
-                    <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 uppercase tracking-tight">
+                    <h3 className="text-sm sm:text-lg font-extrabold text-zinc-950 uppercase tracking-tight">
                       {selectedCat ? `${selectedCat.title} Products` : `Featured In ${CATEGORY_SECTIONS.find(s => s.id === activeSectionId)?.name}`}
                     </h3>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5">
                       {displayedProducts.length > 0
                         ? `${displayedProducts.length} products available for custom order`
                         : 'No products in this category yet'}
@@ -423,29 +422,29 @@ export default function CategoriesPage({
                 </div>
 
                 {displayedProducts.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-                    {displayedProducts.map((prod, idx) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-5">
+                    {displayedProducts.map((prod) => (
                       <div
                         key={prod.id}
                         onClick={() => onSelectProduct && onSelectProduct(prod)}
-                        className="group flex flex-col cursor-pointer"
+                        className="group flex flex-col cursor-pointer bg-white p-2 sm:p-2.5 rounded-2xl border border-zinc-100 hover:border-zinc-300 transition-all shadow-2xs"
                       >
-                        <div className="relative bg-[#f4f4f5] rounded-xl overflow-hidden aspect-[4/5] flex items-center justify-center p-3">
+                        <div className="relative bg-[#f4f4f5] rounded-xl overflow-hidden aspect-[4/5] flex items-center justify-center p-2.5">
                           <img
                             src={prod.image}
                             alt={prod.title}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <div className="pt-2.5 text-center">
-                          <h4 className="text-xs sm:text-sm font-semibold text-zinc-900 group-hover:text-black line-clamp-1">
+                        <div className="pt-2 text-center">
+                          <h4 className="text-[11px] sm:text-sm font-semibold text-zinc-900 group-hover:text-black line-clamp-1">
                             {prod.title}
                           </h4>
-                          <div className="flex items-center justify-center gap-1 mt-0.5 text-[#f59e0b] text-[11px]">
+                          <div className="flex items-center justify-center gap-1 mt-0.5 text-[#f59e0b] text-[10px]">
                             <span>★★★★★</span>
                             <span className="text-zinc-400 font-normal">(24)</span>
                           </div>
-                          <p className="text-xs sm:text-sm font-bold text-zinc-950 mt-1">
+                          <p className="text-xs sm:text-sm font-bold text-zinc-950 mt-0.5">
                             Rs. {prod.price}.00
                           </p>
                         </div>
@@ -453,7 +452,7 @@ export default function CategoriesPage({
                     ))}
                   </div>
                 ) : (
-                  <div className="py-10 px-4 border border-dashed border-zinc-200 rounded-xl text-center">
+                  <div className="py-8 px-4 border border-dashed border-zinc-200 rounded-xl text-center">
                     <p className="text-xs sm:text-sm text-zinc-500">
                       No products added for {selectedCat ? `"${selectedCat.title}"` : 'this section'} yet.
                     </p>

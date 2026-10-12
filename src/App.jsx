@@ -284,34 +284,77 @@ function App() {
         <Footer navigateTo={navigateTo} />
       </main>
 
-      {/* Mobile Bottom Navigation Bar (Clean White Luxury) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md text-zinc-600 flex justify-around items-center px-2 py-2.5 z-40 border-t border-zinc-200 shadow-sm">
-        <button onClick={() => navigateTo('home')} className={`flex flex-col items-center gap-1 ${currentPage === 'home' ? 'text-black font-bold' : 'text-zinc-500 hover:text-black'} transition-colors w-16`}>
-          <HomeIcon size={20} />
-          <span className="text-[10px] font-medium">Home</span>
+      {/* Mobile Bottom Navigation Bar (Matching Zapvi Mobile Style) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md text-zinc-600 flex justify-around items-center px-2 py-2 z-40 border-t border-zinc-200 shadow-sm">
+        <button 
+          onClick={() => navigateTo('home')} 
+          className={`flex flex-col items-center gap-0.5 transition-all w-16 cursor-pointer ${
+            currentPage === 'home' ? 'text-zinc-950 font-black' : 'text-zinc-500 hover:text-black'
+          }`}
+        >
+          <div className={`flex items-center justify-center p-1 rounded-2xl transition-colors ${
+            currentPage === 'home' ? 'bg-amber-100/80 text-zinc-950 px-3' : ''
+          }`}>
+            <HomeIcon size={19} />
+          </div>
+          <span className="text-[10px] font-semibold">Home</span>
         </button>
-        <button onClick={() => navigateTo('categories')} className={`flex flex-col items-center gap-1 ${currentPage === 'categories' ? 'text-black font-bold' : 'text-zinc-500 hover:text-black'} transition-colors w-16`}>
-          <LayoutGrid size={20} />
-          <span className="text-[10px] font-medium">Categories</span>
+
+        <button 
+          onClick={() => navigateTo('categories')} 
+          className={`flex flex-col items-center gap-0.5 transition-all w-16 cursor-pointer ${
+            currentPage === 'categories' ? 'text-zinc-950 font-black' : 'text-zinc-500 hover:text-black'
+          }`}
+        >
+          <div className={`flex items-center justify-center p-1 rounded-2xl transition-colors ${
+            currentPage === 'categories' ? 'bg-amber-100/80 text-zinc-950 px-3' : ''
+          }`}>
+            <LayoutGrid size={19} />
+          </div>
+          <span className="text-[10px] font-semibold">Categories</span>
         </button>
-        <button onClick={() => navigateTo('cart')} className={`relative flex flex-col items-center gap-1 ${currentPage === 'cart' ? 'text-black font-bold' : 'text-zinc-500 hover:text-black'} transition-colors w-16`}>
-          <div className="relative">
-            <ShoppingBag size={20} />
+
+        <button 
+          onClick={() => navigateTo('cart')} 
+          className={`flex flex-col items-center gap-0.5 transition-all w-16 cursor-pointer ${
+            currentPage === 'cart' ? 'text-zinc-950 font-black' : 'text-zinc-500 hover:text-black'
+          }`}
+        >
+          <div className={`relative flex items-center justify-center p-1 rounded-2xl transition-colors ${
+            currentPage === 'cart' ? 'bg-amber-100/80 text-zinc-950 px-3' : ''
+          }`}>
+            <ShoppingBag size={19} />
             {totalCartCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-black text-white text-[9px] font-black rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
+              <span className="absolute -top-1 -right-1.5 bg-black text-white text-[9px] font-black rounded-full min-w-[15px] h-[15px] flex items-center justify-center px-0.5">
                 {totalCartCount}
               </span>
             )}
           </div>
-          <span className="text-[10px] font-medium">Cart</span>
+          <span className="text-[10px] font-semibold">Cart</span>
         </button>
-        <button onClick={() => navigateTo('reviews')} className={`flex flex-col items-center gap-1 ${currentPage === 'reviews' ? 'text-black font-bold' : 'text-zinc-500 hover:text-black'} transition-colors w-16`}>
-          <Star size={20} />
-          <span className="text-[10px] font-medium">Reviews</span>
+
+        <button 
+          onClick={() => navigateTo('reviews')} 
+          className={`flex flex-col items-center gap-0.5 transition-all w-16 cursor-pointer ${
+            currentPage === 'reviews' ? 'text-zinc-950 font-black' : 'text-zinc-500 hover:text-black'
+          }`}
+        >
+          <div className={`flex items-center justify-center p-1 rounded-2xl transition-colors ${
+            currentPage === 'reviews' ? 'bg-amber-100/80 text-zinc-950 px-3' : ''
+          }`}>
+            <Star size={19} />
+          </div>
+          <span className="text-[10px] font-semibold">Reviews</span>
         </button>
-        <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center gap-1 text-zinc-500 hover:text-black transition-colors w-16">
-          <Menu size={20} />
-          <span className="text-[10px] font-medium">Menu</span>
+
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)} 
+          className="flex flex-col items-center gap-0.5 text-zinc-500 hover:text-black transition-all w-16 cursor-pointer"
+        >
+          <div className="flex items-center justify-center p-1">
+            <Menu size={19} />
+          </div>
+          <span className="text-[10px] font-semibold">Menu</span>
         </button>
       </div>
 
