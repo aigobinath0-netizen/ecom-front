@@ -94,7 +94,7 @@ export default function CategoriesPage({
         activeSectionId === 'laptop_skin' ? skinCategories :
           filteredCategories;
 
-  const displayCategories = activeCategories.length > 0 ? activeCategories : allWithSections;
+  const displayCategories = activeCategories;
   const currentSection = CATEGORY_SECTIONS.find(s => s.id === activeSectionId) || CATEGORY_SECTIONS[0];
 
   const handleCategoryClick = (cat) => {
@@ -117,28 +117,10 @@ export default function CategoriesPage({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Products belonging to the selected category (matching Image 2)
-  const rawCatProducts = selectedCat
+  // Products belonging to the selected category - strictly user-added products only
+  const selectedCatProducts = selectedCat
     ? products.filter(p => p.categoryId === selectedCat.id || p.categoryTitle === selectedCat.title)
     : [];
-
-  const selectedCatProducts = selectedCat ? (
-    rawCatProducts.length >= 4
-      ? rawCatProducts
-      : [
-        ...rawCatProducts,
-        ...[
-          { id: `${selectedCat.id}_p1`, categoryId: selectedCat.id, title: `${selectedCat.title}`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: selectedCat.image },
-          { id: `${selectedCat.id}_p2`, categoryId: selectedCat.id, title: `${selectedCat.title} - Matte Edition`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[0]?.image || selectedCat.image },
-          { id: `${selectedCat.id}_p3`, categoryId: selectedCat.id, title: `${selectedCat.title} - Custom Glass`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[1]?.image || selectedCat.image },
-          { id: `${selectedCat.id}_p4`, categoryId: selectedCat.id, title: `${selectedCat.title} - Special Edition`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[2]?.image || selectedCat.image },
-          { id: `${selectedCat.id}_p5`, categoryId: selectedCat.id, title: `${selectedCat.title} - Bestseller`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: selectedCat.image },
-          { id: `${selectedCat.id}_p6`, categoryId: selectedCat.id, title: `${selectedCat.title} - Premium Case`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[0]?.image || selectedCat.image },
-          { id: `${selectedCat.id}_p7`, categoryId: selectedCat.id, title: `${selectedCat.title} - Ultra Glossy`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[1]?.image || selectedCat.image },
-          { id: `${selectedCat.id}_p8`, categoryId: selectedCat.id, title: `${selectedCat.title} - Tough Shockproof`, price: selectedCat.startingPrice || 499, oldPrice: 999, off: '50% off', badge: 'SALE', image: rawCatProducts[2]?.image || selectedCat.image }
-        ].slice(0, Math.max(4, 8 - rawCatProducts.length))
-      ]
-  ) : [];
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -237,7 +219,7 @@ export default function CategoriesPage({
                         <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-zinc-900 border-2 border-zinc-600 ring-1 ring-zinc-700"></div>
                       </div>
                       <img
-                        src={selectedCatProducts[1]?.image || selectedCat.image}
+                        src={selectedCatProducts[1]?.image || selectedCatProducts[0]?.image || selectedCat.image}
                         alt={selectedCat.title}
                         className="w-full h-full object-cover rounded-[22px] sm:rounded-[32px]"
                       />
@@ -261,39 +243,45 @@ export default function CategoriesPage({
           </div>
 
           {/* 3. PRODUCT CARDS 4-COLUMN GRID (MATCHING IMAGE 2) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-20">
-            {selectedCatProducts.map((prod) => (
-              <div
-                key={prod.id}
-                onClick={() => onSelectProduct && onSelectProduct(prod)}
-                className="group flex flex-col bg-white rounded-2xl border border-zinc-200/90 hover:border-zinc-400 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
-              >
-                {/* Image Container with Top-Left Black SALE Badge */}
-                <div className="relative bg-[#f4f4f5] aspect-[4/5] flex items-center justify-center p-3 sm:p-5 overflow-hidden">
-                  <span className="absolute top-3 left-3 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-xs shadow-xs z-10">
-                    {prod.badge || 'SALE'}
-                  </span>
-                  <img
-                    src={prod.image}
-                    alt={prod.title}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+          {selectedCatProducts.length === 0 ? (
+            <div className="py-16 text-center border border-dashed border-zinc-200 rounded-2xl my-8">
+              <p className="text-zinc-500 font-medium">No products added to this category yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-20">
+              {selectedCatProducts.map((prod) => (
+                <div
+                  key={prod.id}
+                  onClick={() => onSelectProduct && onSelectProduct(prod)}
+                  className="group flex flex-col bg-white rounded-2xl border border-zinc-200/90 hover:border-zinc-400 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                >
+                  {/* Image Container with Top-Left Black SALE Badge */}
+                  <div className="relative bg-[#f4f4f5] aspect-[4/5] flex items-center justify-center p-3 sm:p-5 overflow-hidden">
+                    <span className="absolute top-3 left-3 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-xs shadow-xs z-10">
+                      {prod.badge || 'SALE'}
+                    </span>
+                    <img
+                      src={prod.image}
+                      alt={prod.title}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
 
-                {/* Product Info Directly Below Image */}
-                <div className="p-3 sm:p-4 pt-2">
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 group-hover:text-black line-clamp-1">
-                    {prod.title}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1.5 text-xs sm:text-sm">
-                    <span className="font-extrabold text-zinc-950">₹{prod.price || 499}</span>
-                    <span className="text-xs text-zinc-400 line-through">₹{prod.oldPrice || 999}</span>
-                    <span className="font-bold text-xs text-emerald-600">{prod.off || '50% off'}</span>
+                  {/* Product Info Directly Below Image */}
+                  <div className="p-3 sm:p-4 pt-2">
+                    <h3 className="text-xs sm:text-sm font-bold text-zinc-900 group-hover:text-black line-clamp-1">
+                      {prod.title}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1.5 text-xs sm:text-sm">
+                      <span className="font-extrabold text-zinc-950">₹{prod.price || 499}</span>
+                      {prod.oldPrice && <span className="text-xs text-zinc-400 line-through">₹{prod.oldPrice}</span>}
+                      {prod.off && <span className="font-bold text-xs text-emerald-600">{prod.off}</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         /* ========================================================================= */

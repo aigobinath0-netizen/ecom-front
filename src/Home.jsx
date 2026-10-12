@@ -28,7 +28,7 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
   }));
 
   const activeCategories = allWithSections.filter(c => c.section === activeSectionId);
-  const displayCategories = activeCategories.length > 0 ? activeCategories : allWithSections;
+  const displayCategories = activeCategories;
   const currentSection = CATEGORY_SECTIONS.find(s => s.id === activeSectionId) || CATEGORY_SECTIONS[0];
 
   return (
