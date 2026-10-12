@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, X, Pause, Play, Layers } from 'lucide-react';
+import { apiFetch } from './categoryData';
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
@@ -25,7 +26,7 @@ export default function Reviews() {
     const editedReviews = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
 
     try {
-      const response = await fetch('https://ecom-back-kwol.onrender.com/api/reviews');
+      const response = await apiFetch('/reviews');
       const data = await response.json();
       if (Array.isArray(data)) {
         const active = data
@@ -55,7 +56,7 @@ export default function Reviews() {
     const editedStories = JSON.parse(localStorage.getItem('edited_stories') || '{}');
 
     try {
-      const response = await fetch('https://ecom-back-kwol.onrender.com/api/stories');
+      const response = await apiFetch('/stories');
       const data = await response.json();
 
       if (Array.isArray(data)) {
@@ -224,7 +225,7 @@ export default function Reviews() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://ecom-back-kwol.onrender.com/api/reviews', {
+      const response = await apiFetch('/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

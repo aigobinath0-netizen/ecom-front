@@ -75,7 +75,41 @@ export function normalizeCategorySection(cat) {
   return 'phone_cover';
 }
 
-const API_BASE = 'https://ecom-back-kwol.onrender.com/api';
+export const PRIMARY_API_BASE = 'http://localhost:8081/api';
+export const REMOTE_API_BASE = 'https://ecom-back-kwol.onrender.com/api';
+
+// Prefer local backend when on localhost, fallback to Render
+export let API_BASE = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+  ? PRIMARY_API_BASE
+  : REMOTE_API_BASE;
+
+// Resilient API caller with instant local attempt and automatic remote fallback
+export async function apiFetch(path, options = {}) {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // 1. Try local port 8081 first if on localhost with 2s timeout
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const localRes = await fetch(`${PRIMARY_API_BASE}${cleanPath}`, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (localRes.ok || localRes.status < 500) {
+        API_BASE = PRIMARY_API_BASE;
+        return localRes;
+      }
+    } catch (e) {
+      // Local backend offline or timed out, seamlessly proceed to remote
+    }
+  }
+
+  // 2. Remote Render backend fallback
+  API_BASE = REMOTE_API_BASE;
+  return fetch(`${REMOTE_API_BASE}${cleanPath}`, options);
+}
 
 // Helper functions for categories (synchronous cache read)
 export function getStoredCategories() {
@@ -95,7 +129,7 @@ export function getStoredCategories() {
       .filter(cat => !deletedIds.includes(cat.id))
       .map(cat => {
         const merged = editedMap[cat.id] ? { ...cat, ...editedMap[cat.id] } : cat;
-        if (!merged.section) merged.section = 'phone_cover';
+        if (!merged.section) merged.section = normalizeCategorySection(merged);
         return merged;
       });
   } catch (e) {
@@ -106,19 +140,21 @@ export function getStoredCategories() {
 // Asynchronous fetch from backend with 2-way sync
 export async function fetchCategoriesFromApi() {
   try {
-    const res = await fetch(`${API_BASE}/categories`);
+    const res = await apiFetch('/categories');
     if (!res.ok) throw new Error('Failed to fetch categories');
-    const serverCats = await res.json();
+    const rawServerCats = await res.json();
+    const serverCats = Array.isArray(rawServerCats)
+      ? rawServerCats.map(c => ({ ...c, section: normalizeCategorySection(c) }))
+      : [];
 
     // Check if local storage has any categories not yet synced to backend
     const localCats = getStoredCategories();
     if (Array.isArray(localCats) && localCats.length > 0) {
-      const serverIds = new Set((serverCats || []).map(c => c.id));
+      const serverIds = new Set(serverCats.map(c => c.id));
       for (const locCat of localCats) {
         if (!serverIds.has(locCat.id)) {
-          // Push locally created category to backend
           try {
-            await fetch(`${API_BASE}/categories`, {
+            await apiFetch('/categories', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(locCat)
@@ -131,7 +167,7 @@ export async function fetchCategoriesFromApi() {
       }
     }
 
-    if (Array.isArray(serverCats)) {
+    if (Array.isArray(serverCats) && serverCats.length > 0) {
       localStorage.setItem('custom_categories', JSON.stringify(serverCats));
       return serverCats;
     }
@@ -143,6 +179,8 @@ export async function fetchCategoriesFromApi() {
 
 export async function saveStoredCategory(cat) {
   try {
+    if (!cat.section) cat.section = normalizeCategorySection(cat);
+
     // 1. Update localStorage cache immediately
     const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
     const existingIndex = custom.findIndex(c => c.id === cat.id);
@@ -158,11 +196,12 @@ export async function saveStoredCategory(cat) {
     localStorage.setItem('edited_categories', JSON.stringify(editedMap));
 
     // 2. Persist to Backend API
-    await fetch(`${API_BASE}/categories`, {
+    const res = await apiFetch('/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cat)
     });
+    return res;
   } catch (e) {
     console.error('Failed to sync category with backend:', e);
   }
@@ -184,7 +223,8 @@ export async function deleteStoredCategory(id) {
     localStorage.setItem('custom_products', JSON.stringify(prods.filter(p => p.categoryId !== id)));
 
     // 2. Backend API
-    await fetch(`${API_BASE}/categories/${id}`, { method: 'DELETE' });
+    const res = await apiFetch(`/categories/${id}`, { method: 'DELETE' });
+    return res;
   } catch (e) {
     console.error('Failed to delete category on backend:', e);
   }
@@ -220,10 +260,10 @@ export function getStoredProducts(categoryId = null) {
 export async function fetchProductsFromApi(categoryId = null) {
   try {
     const url = (categoryId && categoryId !== 'all') 
-      ? `${API_BASE}/products?categoryId=${encodeURIComponent(categoryId)}`
-      : `${API_BASE}/products`;
+      ? `/products?categoryId=${encodeURIComponent(categoryId)}`
+      : '/products';
     
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     if (!res.ok) throw new Error('Failed to fetch products');
     const serverProds = await res.json();
 
@@ -233,14 +273,13 @@ export async function fetchProductsFromApi(categoryId = null) {
       const serverIds = new Set((serverProds || []).map(p => p.id));
       for (const locProd of localProds) {
         if (!serverIds.has(locProd.id)) {
-          // Push locally created product to backend
           try {
-            await fetch(`${API_BASE}/products`, {
+            await apiFetch('/products', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(locProd)
             });
-            serverProds.push(locProd);
+            if (Array.isArray(serverProds)) serverProds.push(locProd);
           } catch (e) {
             console.error('Error syncing local product to server', e);
           }
@@ -278,11 +317,12 @@ export async function saveStoredProduct(prod) {
     localStorage.setItem('edited_products', JSON.stringify(editedMap));
 
     // 2. Persist to Backend API
-    await fetch(`${API_BASE}/products`, {
+    const res = await apiFetch('/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(prod)
     });
+    return res;
   } catch (e) {
     console.error('Failed to sync product with backend:', e);
   }
@@ -300,8 +340,10 @@ export async function deleteStoredProduct(id) {
     localStorage.setItem('custom_products', JSON.stringify(custom.filter(p => p.id !== id)));
 
     // 2. Backend API
-    await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+    const res = await apiFetch(`/products/${id}`, { method: 'DELETE' });
+    return res;
   } catch (e) {
     console.error('Failed to delete product on backend:', e);
   }
 }
+

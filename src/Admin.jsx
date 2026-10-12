@@ -23,7 +23,10 @@ import {
   saveStoredProduct, 
   deleteStoredProduct,
   fetchCategoriesFromApi,
-  fetchProductsFromApi
+  fetchProductsFromApi,
+  normalizeCategorySection,
+  apiFetch,
+  API_BASE
 } from './categoryData';
 
 export default function Admin({ setCurrentPage, onSelectCategory }) {
@@ -123,15 +126,17 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
   const fetchExistingStories = async () => {
     try {
-      const res = await fetch('https://ecom-back-kwol.onrender.com/api/stories');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        const deletedIds = JSON.parse(localStorage.getItem('deleted_story_ids') || '[]');
-        const editedStories = JSON.parse(localStorage.getItem('edited_stories') || '{}');
-        const active = data
-          .filter(s => !deletedIds.includes(s.id))
-          .map(s => editedStories[s.id] || s);
-        setExistingStories(active.reverse());
+      const res = await apiFetch('/stories');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const deletedIds = JSON.parse(localStorage.getItem('deleted_story_ids') || '[]');
+          const editedStories = JSON.parse(localStorage.getItem('edited_stories') || '{}');
+          const active = data
+            .filter(s => !deletedIds.includes(s.id))
+            .map(s => editedStories[s.id] || s);
+          setExistingStories(active.reverse());
+        }
       }
     } catch (err) {
       console.error(err);
@@ -140,15 +145,17 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
   const fetchExistingReviews = async () => {
     try {
-      const res = await fetch('https://ecom-back-kwol.onrender.com/api/reviews');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        const deletedIds = JSON.parse(localStorage.getItem('deleted_review_ids') || '[]');
-        const editedReviews = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
-        const active = data
-          .filter(r => !deletedIds.includes(r.id))
-          .map(r => editedReviews[r.id] || r);
-        setExistingReviews(active.reverse());
+      const res = await apiFetch('/reviews');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const deletedIds = JSON.parse(localStorage.getItem('deleted_review_ids') || '[]');
+          const editedReviews = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
+          const active = data
+            .filter(r => !deletedIds.includes(r.id))
+            .map(r => editedReviews[r.id] || r);
+          setExistingReviews(active.reverse());
+        }
       }
     } catch (err) {
       console.error(err);
@@ -159,12 +166,12 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     let combinedOrders = [];
     try {
       // Fetch from Java Spring Boot backend
-      const response = await fetch('https://ecom-back-kwol.onrender.com/api/orders');
+      const response = await apiFetch('/orders');
       if (response.ok) {
         const dbOrders = await response.json();
         
         // Parse items and customer strings from database back into objects
-        const parsedDbOrders = dbOrders.map(order => {
+        const parsedDbOrders = (dbOrders || []).map(order => {
           let parsedItems = order.items;
           let parsedCustomer = order.customer;
           
@@ -185,14 +192,13 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
         combinedOrders = [...parsedDbOrders.reverse()];
       }
     } catch (e) {
-      console.warn("Backend offline, using local orders only", e);
+      console.warn("Backend orders offline, using local cache", e);
     }
 
-    // Always merge with local storage as a fallback for orders that couldn't reach the backend
+    // Always merge with local storage as a fallback
     try {
       let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
       if (Array.isArray(storedOrders)) {
-        // Only add local orders that aren't already in the combined list
         const existingIds = new Set(combinedOrders.map(o => o.orderId));
         const missingLocalOrders = storedOrders.filter(o => !existingIds.has(o.orderId));
         combinedOrders = [...missingLocalOrders, ...combinedOrders];
@@ -201,19 +207,36 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       console.error(e);
     }
     
-    // Sort by orderId descending or just set them
     setOrders(combinedOrders);
   };
 
-  const deleteOrder = (orderIdToDelete) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
-      try {
-        const updatedOrders = orders.filter(o => o.orderId !== orderIdToDelete);
-        setOrders(updatedOrders);
-        localStorage.setItem('customer_orders', JSON.stringify(updatedOrders));
-      } catch (err) {
-        alert('Failed to delete order.');
-      }
+  const deleteOrder = async (orderIdToDelete) => {
+    if (!window.confirm(`Are you sure you want to delete order "${orderIdToDelete}"?`)) return;
+    try {
+      const updatedOrders = orders.filter(o => o.orderId !== orderIdToDelete);
+      setOrders(updatedOrders);
+      localStorage.setItem('customer_orders', JSON.stringify(updatedOrders));
+      await apiFetch(`/orders/${orderIdToDelete}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Failed to delete order from backend:', err);
+    }
+  };
+
+  const toggleOrderStatus = async (orderId, currentPaidStatus) => {
+    const newStatus = !currentPaidStatus;
+    try {
+      setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, isPaid: newStatus } : o));
+      const local = JSON.parse(localStorage.getItem('customer_orders') || '[]');
+      const updatedLocal = local.map(o => o.orderId === orderId ? { ...o, isPaid: newStatus } : o);
+      localStorage.setItem('customer_orders', JSON.stringify(updatedLocal));
+
+      await apiFetch(`/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPaid: newStatus })
+      });
+    } catch (err) {
+      console.error('Failed to toggle order status on backend:', err);
     }
   };
 
@@ -249,7 +272,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     }
   };
 
-  const handleCreateCategory = (e) => {
+  const handleCreateCategory = async (e) => {
     e.preventDefault();
     if (!newCategory.title.trim()) {
       alert('Please enter a category title');
@@ -269,16 +292,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       startingPrice: Number(newCategory.startingPrice) || 499
     };
 
-    saveStoredCategory(categoryObj);
-    try {
-      fetch('https://ecom-back-kwol.onrender.com/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(categoryObj)
-      }).catch(() => {});
-    } catch (err) {}
-
-    refreshCategoriesAndProducts();
+    await saveStoredCategory(categoryObj);
+    await refreshCategoriesAndProducts();
     setNewCategory({ 
       title: '', 
       section: 'phone_cover',
@@ -292,27 +307,17 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     alert(`Category "${categoryObj.title}" created successfully under section "${categoryObj.section}"!`);
   };
 
-  const handleDeleteCategory = (id, catTitle) => {
+  const handleDeleteCategory = async (id, catTitle) => {
     if (!window.confirm(`Are you sure you want to delete category "${catTitle}"?`)) return;
-    deleteStoredCategory(id);
-    try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/categories/${id}`, { method: 'DELETE' }).catch(() => {});
-    } catch (err) {}
-    refreshCategoriesAndProducts();
+    await deleteStoredCategory(id);
+    await refreshCategoriesAndProducts();
   };
 
-  const handleSaveEditCategory = (e) => {
+  const handleSaveEditCategory = async (e) => {
     e.preventDefault();
     if (!editingCategory.title.trim()) return;
-    saveStoredCategory(editingCategory);
-    try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/categories/${editingCategory.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingCategory)
-      }).catch(() => {});
-    } catch (err) {}
-    refreshCategoriesAndProducts();
+    await saveStoredCategory(editingCategory);
+    await refreshCategoriesAndProducts();
     setEditingCategory(null);
     alert('Category updated successfully!');
   };
@@ -340,7 +345,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     return offText;
   };
 
-  const handleCreateProduct = (e) => {
+  const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!newProduct.title.trim()) {
       alert('Please enter product title');
@@ -363,16 +368,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       image: newProduct.image || '/images/c91763e18dbd1daedb47c48b.jpg'
     };
 
-    saveStoredProduct(productObj);
-    try {
-      fetch('https://ecom-back-kwol.onrender.com/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productObj)
-      }).catch(() => {});
-    } catch (err) {}
-
-    refreshCategoriesAndProducts();
+    await saveStoredProduct(productObj);
+    await refreshCategoriesAndProducts();
     setNewProduct(prev => ({
       ...prev,
       title: '',
@@ -382,27 +379,17 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     alert(`Product "${productObj.title}" added to category successfully!`);
   };
 
-  const handleDeleteProduct = (id, prodTitle) => {
+  const handleDeleteProduct = async (id, prodTitle) => {
     if (!window.confirm(`Are you sure you want to delete product "${prodTitle}"?`)) return;
-    deleteStoredProduct(id);
-    try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/products/${id}`, { method: 'DELETE' }).catch(() => {});
-    } catch (err) {}
-    refreshCategoriesAndProducts();
+    await deleteStoredProduct(id);
+    await refreshCategoriesAndProducts();
   };
 
-  const handleSaveEditProduct = (e) => {
+  const handleSaveEditProduct = async (e) => {
     e.preventDefault();
     if (!editingProduct.title.trim()) return;
-    saveStoredProduct(editingProduct);
-    try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/products/${editingProduct.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingProduct)
-      }).catch(() => {});
-    } catch (err) {}
-    refreshCategoriesAndProducts();
+    await saveStoredProduct(editingProduct);
+    await refreshCategoriesAndProducts();
     setEditingProduct(null);
     alert('Product updated successfully!');
   };
@@ -433,12 +420,12 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     setIsUploading(true);
     const payload = {
       name: storyName,
-      img: storyImages.join('|||'),
+      img: storyImages[0] || null,
       images: storyImages
     };
 
     try {
-      await fetch('https://ecom-back-kwol.onrender.com/api/stories', {
+      await apiFetch('/stories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -461,8 +448,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const handleDeleteStory = async (id) => {
     if (!window.confirm('Are you sure you want to delete this story?')) return;
     try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/stories/${id}`, { method: 'DELETE' }).catch(() => {});
-      fetch(`https://ecom-back-kwol.onrender.com/api/stories/delete/${id}`, { method: 'POST' }).catch(() => {});
+      await apiFetch(`/stories/${id}`, { method: 'DELETE' });
     } catch (e) {}
 
     try {
@@ -513,16 +499,16 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     const payload = {
       id: editingStory.id,
       name: editingStory.name,
-      img: editingStory.images.join('|||'),
+      img: editingStory.images[0] || null,
       images: editingStory.images
     };
 
     try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/stories/${editingStory.id}`, {
+      await apiFetch(`/stories/${editingStory.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch(() => {});
+      });
     } catch (err) {}
 
     try {
@@ -561,7 +547,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     };
 
     try {
-      await fetch('https://ecom-back-kwol.onrender.com/api/reviews', {
+      await apiFetch('/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -591,7 +577,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const handleDeleteReview = async (id) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return;
     try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/reviews/${id}`, { method: 'DELETE' }).catch(() => {});
+      await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
     } catch (e) {}
 
     try {
@@ -626,11 +612,11 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     const payload = { ...editingReview };
 
     try {
-      fetch(`https://ecom-back-kwol.onrender.com/api/reviews/${editingReview.id}`, {
+      await apiFetch(`/reviews/${editingReview.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch(() => {});
+      });
     } catch (err) {}
 
     try {
@@ -1073,10 +1059,10 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                 {/* Section Filter Pills */}
                 <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none">
                   {[
-                    { id: 'all', label: 'All Sections' },
-                    { id: 'phone_cover', label: '📱 1. Phone Cover' },
-                    { id: 'temper_glass', label: '🛡️ 2. Phone Temper Glass' },
-                    { id: 'laptop_skin', label: '💻 3. Phone & Laptop Skin' }
+                    { id: 'all', label: `All Sections (${categories.length})` },
+                    { id: 'phone_cover', label: `📱 1. Phone Cover (${categories.filter(c => normalizeCategorySection(c) === 'phone_cover').length})` },
+                    { id: 'temper_glass', label: `🛡️ 2. Phone Temper Glass (${categories.filter(c => normalizeCategorySection(c) === 'temper_glass').length})` },
+                    { id: 'laptop_skin', label: `💻 3. Phone & Laptop Skin (${categories.filter(c => normalizeCategorySection(c) === 'laptop_skin').length})` }
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -1108,12 +1094,13 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categories
-                      .filter(c => categorySectionFilter === 'all' || (c.section || 'phone_cover') === categorySectionFilter)
+                      .filter(c => categorySectionFilter === 'all' || normalizeCategorySection(c) === categorySectionFilter)
                       .map((cat) => {
                       const prodCount = products.filter(p => p.categoryId === cat.id).length;
+                      const normSec = normalizeCategorySection(cat);
                       const secName = 
-                        cat.section === 'temper_glass' ? '🛡️ Temper Glass' :
-                        cat.section === 'laptop_skin' ? '💻 Skin & Wrap' :
+                        normSec === 'temper_glass' ? '🛡️ Temper Glass' :
+                        normSec === 'laptop_skin' ? '💻 Skin & Wrap' :
                         '📱 Phone Cover';
                       return (
                         <div
@@ -1266,11 +1253,27 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                       className="w-full border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm bg-white"
                     >
                       <option value="">-- Choose Category --</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.title}
-                        </option>
-                      ))}
+                      <optgroup label="📱 1. Phone Cover">
+                        {categories
+                          .filter(c => normalizeCategorySection(c) === 'phone_cover')
+                          .map(c => (
+                            <option key={c.id} value={c.id}>{c.title}</option>
+                          ))}
+                      </optgroup>
+                      <optgroup label="🛡️ 2. Phone Temper Glass">
+                        {categories
+                          .filter(c => normalizeCategorySection(c) === 'temper_glass')
+                          .map(c => (
+                            <option key={c.id} value={c.id}>{c.title}</option>
+                          ))}
+                      </optgroup>
+                      <optgroup label="💻 3. Phone & Laptop Skin">
+                        {categories
+                          .filter(c => normalizeCategorySection(c) === 'laptop_skin')
+                          .map(c => (
+                            <option key={c.id} value={c.id}>{c.title}</option>
+                          ))}
+                      </optgroup>
                     </select>
                   </div>
 
@@ -1964,9 +1967,27 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                   onChange={(e) => setEditingProduct({ ...editingProduct, categoryId: e.target.value })}
                   className="w-full border border-zinc-200 rounded-xl px-4 py-2.5 outline-none focus:border-amber-400 text-sm bg-white"
                 >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
-                  ))}
+                  <optgroup label="📱 1. Phone Cover">
+                    {categories
+                      .filter(c => normalizeCategorySection(c) === 'phone_cover')
+                      .map(c => (
+                        <option key={c.id} value={c.id}>{c.title}</option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="🛡️ 2. Phone Temper Glass">
+                    {categories
+                      .filter(c => normalizeCategorySection(c) === 'temper_glass')
+                      .map(c => (
+                        <option key={c.id} value={c.id}>{c.title}</option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="💻 3. Phone & Laptop Skin">
+                    {categories
+                      .filter(c => normalizeCategorySection(c) === 'laptop_skin')
+                      .map(c => (
+                        <option key={c.id} value={c.id}>{c.title}</option>
+                      ))}
+                  </optgroup>
                 </select>
               </div>
 
@@ -2283,13 +2304,28 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                         <div className="font-black text-zinc-900 text-lg">INR ₹{order.total}</div>
                         <p className="text-xs text-zinc-500 font-medium">Shipping: {order.shipping}</p>
                       </div>
-                      <button 
-                        onClick={() => deleteOrder(order.orderId)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors"
-                        title="Delete Order"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          type="button"
+                          onClick={() => toggleOrderStatus(order.orderId, order.isPaid)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            order.isPaid
+                              ? 'bg-amber-100 hover:bg-amber-200 text-amber-800'
+                              : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                          }`}
+                          title={order.isPaid ? 'Mark as Pending' : 'Mark as Completed / Paid'}
+                        >
+                          {order.isPaid ? 'Mark Pending' : '✓ Mark Paid'}
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => deleteOrder(order.orderId)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors cursor-pointer"
+                          title="Delete Order"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 

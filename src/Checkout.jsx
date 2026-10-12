@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   CreditCard
 } from 'lucide-react';
+import { apiFetch } from './categoryData';
 
 export default function Checkout({
   cart,
@@ -94,7 +95,7 @@ export default function Checkout({
 
     // 1. Send to Java Backend Database
     try {
-      fetch('https://ecom-back-kwol.onrender.com/api/orders', {
+      apiFetch('/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(placedOrder)
