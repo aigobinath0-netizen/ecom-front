@@ -56,17 +56,15 @@ export function normalizeCategorySection(cat) {
 }
 
 // API Base URLs
+export const RAILWAY_API_BASE = 'https://ecom-back-production.up.railway.app/api';
 export const LOCAL_API_BASE = 'http://localhost:8081/api';
-export const REMOTE_API_BASE = 'https://ecom-back-kwol.onrender.com/api';
+export const REMOTE_API_BASE = RAILWAY_API_BASE;
 
 const getInitialApiBase = () => {
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return LOCAL_API_BASE;
-    }
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE) {
+    return import.meta.env.VITE_API_BASE;
   }
-  return REMOTE_API_BASE;
+  return RAILWAY_API_BASE;
 };
 
 export const PRIMARY_API_BASE = getInitialApiBase();
