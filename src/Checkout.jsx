@@ -12,7 +12,7 @@ import {
   ShoppingBag,
   CreditCard
 } from 'lucide-react';
-import { apiFetch } from './categoryData';
+import { apiFetch, saveStoredOrder } from './categoryData';
 
 export default function Checkout({
   cart,
@@ -58,7 +58,7 @@ export default function Checkout({
     }
   };
 
-  const handlePayNow = (e) => {
+  const handlePayNow = async (e) => {
     e.preventDefault();
 
     // Validation
@@ -83,46 +83,36 @@ export default function Checkout({
 
     // Simulate safe order placement / payment
     const orderId = 'PW-' + Math.floor(100000 + Math.random() * 900000);
+    const cleanItems = (cart || []).map(item => ({
+      id: item.id || ('prod-' + Math.random().toString(36).substr(2, 6)),
+      title: item.title || 'Mobile Case',
+      model: item.model || 'Universal Phone Model',
+      wording: item.wording || '',
+      price: item.price || 499,
+      quantity: item.quantity || 1,
+      image: (typeof item.image === 'string' && item.image.startsWith('data:') && item.image.length > 500)
+        ? '/images/00e44de62ec83c768bb02d8f.jpg'
+        : (item.image || '/images/00e44de62ec83c768bb02d8f.jpg')
+    }));
+
     const placedOrder = {
       orderId,
       date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-      items: JSON.stringify([...cart]), // Ensure it's stringified for DB TEXT column
-      customer: JSON.stringify({ ...formData }), // Ensure it's stringified for DB TEXT column
+      items: cleanItems,
+      customer: { ...formData },
       total: finalTotal.toString(),
       shipping: shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`,
       isPaid: true
     };
 
-    // 1. Send to Java Backend Database
     try {
-      apiFetch('/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(placedOrder)
-      }).catch(e => console.warn("Backend not reachable yet", e));
-    } catch (dbErr) {
-      console.warn("Could not save to DB", dbErr);
-    }
-
-    // 2. Also save to local storage (for fallback / track order feature)
-    try {
-      let existingOrders = [];
-      try {
-        existingOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
-        if (!Array.isArray(existingOrders)) existingOrders = [];
-      } catch (parseErr) {
-        existingOrders = [];
-      }
-      // Revert items and customer back to objects for local storage
-      const localOrder = { ...placedOrder, items: [...cart], customer: { ...formData } };
-      existingOrders.unshift(localOrder);
-      localStorage.setItem('customer_orders', JSON.stringify(existingOrders));
+      await saveStoredOrder(placedOrder);
     } catch (err) {
-      console.error("Failed to save order to local storage", err);
+      console.error('Failed to save order:', err);
     }
 
     setTimeout(() => {
-      setOrderComplete({ ...placedOrder, items: [...cart], customer: { ...formData } });
+      setOrderComplete(placedOrder);
       setIsSubmitting(false);
       clearCart();
     }, 1200);

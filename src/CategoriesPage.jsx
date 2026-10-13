@@ -19,8 +19,8 @@ export default function CategoriesPage({
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState(getStoredCategories);
+  const [products, setProducts] = useState(getStoredProducts);
   // 'phone_cover', 'temper_glass', 'laptop_skin', 'all'
   const [activeSectionId, setActiveSectionId] = useState('phone_cover');
   const [selectedCat, setSelectedCat] = useState(null);

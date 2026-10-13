@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, X, Pause, Play, Layers } from 'lucide-react';
-import { apiFetch } from './categoryData';
+import { 
+  apiFetch,
+  getStoredReviews,
+  saveStoredReview,
+  fetchReviewsFromApi,
+  getStoredStories,
+  fetchStoriesFromApi
+} from './categoryData';
 
 export default function Reviews() {
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(getStoredReviews);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(getStoredStories);
 
   // Story viewer state
   const [activeStoryIndex, setActiveStoryIndex] = useState(null);
@@ -22,104 +29,28 @@ export default function Reviews() {
   });
 
   const fetchReviews = async () => {
-    const deletedIds = JSON.parse(localStorage.getItem('deleted_review_ids') || '[]');
-    const editedReviews = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
-
+    setReviews(getStoredReviews());
     try {
-      const response = await apiFetch('/reviews');
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        const active = data
-          .filter(r => !deletedIds.includes(r.id))
-          .map(r => editedReviews[r.id] ? { ...r, ...editedReviews[r.id] } : r);
-        setReviews(active);
-        return;
+      const liveReviews = await fetchReviewsFromApi();
+      if (Array.isArray(liveReviews)) {
+        setReviews(liveReviews);
       }
     } catch (error) {
       console.error("Failed to fetch reviews from server:", error);
     }
-
-    // Offline fallback only
-    try {
-      const local = JSON.parse(localStorage.getItem('custom_reviews') || '[]');
-      if (Array.isArray(local) && local.length > 0) {
-        const activeLocal = local
-          .filter(r => !deletedIds.includes(r.id))
-          .map(r => editedReviews[r.id] ? { ...r, ...editedReviews[r.id] } : r);
-        setReviews(activeLocal);
-      }
-    } catch (e) { }
   };
 
   const fetchStories = async () => {
-    const deletedIds = JSON.parse(localStorage.getItem('deleted_story_ids') || '[]');
-    const editedStories = JSON.parse(localStorage.getItem('edited_stories') || '{}');
-
+    setStories(getStoredStories());
     try {
-      const response = await apiFetch('/stories');
-      const data = await response.json();
-
-      if (Array.isArray(data)) {
-        const normalized = data
-          .filter(s => !deletedIds.includes(s.id))
-          .map(s => {
-            const effective = editedStories[s.id] ? { ...s, ...editedStories[s.id] } : s;
-            let imgs = [];
-            if (Array.isArray(effective.images) && effective.images.length > 0) {
-              imgs = effective.images;
-            } else if (effective.img) {
-              if (effective.img.includes('|||')) {
-                imgs = effective.img.split('|||').filter(Boolean);
-              } else if (effective.img.startsWith('[') && effective.img.endsWith(']')) {
-                try {
-                  const parsed = JSON.parse(effective.img);
-                  if (Array.isArray(parsed) && parsed.length > 0) imgs = parsed;
-                  else imgs = [effective.img];
-                } catch (e) {
-                  imgs = [effective.img];
-                }
-              } else {
-                imgs = [effective.img];
-              }
-            }
-            return {
-              id: effective.id,
-              name: effective.name,
-              time: 'Recently added',
-              images: imgs,
-              img: imgs[0] || ''
-            };
-          });
-        setStories(normalized.reverse());
-        return;
+      const liveStories = await fetchStoriesFromApi();
+      if (Array.isArray(liveStories)) {
+        setStories(liveStories);
       }
     } catch (error) {
       console.error("Failed to fetch stories from server:", error);
     }
-
-    // Offline fallback only
-    try {
-      const local = JSON.parse(localStorage.getItem('custom_stories') || '[]');
-      if (Array.isArray(local) && local.length > 0) {
-        const localNormalized = local
-          .filter(s => !deletedIds.includes(s.id))
-          .map((s, idx) => {
-            const effective = editedStories[s.id] || s;
-            return {
-              id: effective.id || ('local-' + idx),
-              name: effective.name,
-              time: 'Just now',
-              images: effective.images || (effective.img ? [effective.img] : []),
-              img: effective.img || (effective.images && effective.images[0]) || ''
-            };
-          });
-        setStories(localNormalized);
-      }
-    } catch (e) {
-      console.error(e);
-    }
   };
-
 
   useEffect(() => {
     fetchReviews();
@@ -225,29 +156,23 @@ export default function Reviews() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await apiFetch('/reviews', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newReview)
-      });
-      if (response.ok) {
-        setIsModalOpen(false);
-        setNewReview({ author: '', title: '', text: '', rating: 5 });
-        fetchReviews();
-      } else {
-        alert('Failed to submit review');
-      }
-    } catch (error) {
-      console.error("Failed to submit review:", error);
-      try {
-        const local = JSON.parse(localStorage.getItem('custom_reviews') || '[]');
-        localStorage.setItem('custom_reviews', JSON.stringify([{ ...newReview, verified: false, id: 'local-' + Date.now() }, ...local]));
-      } catch (err) { }
+      const reviewToSave = {
+        ...newReview,
+        id: 'rev-' + Date.now(),
+        verified: true,
+        createdAt: new Date().toISOString()
+      };
+      await saveStoredReview(reviewToSave);
+      setReviews(getStoredReviews());
       setIsModalOpen(false);
       setNewReview({ author: '', title: '', text: '', rating: 5 });
+      // Background re-fetch to ensure sync
       fetchReviews();
+    } catch (error) {
+      console.error("Failed to submit review:", error);
+      setIsModalOpen(false);
+      setNewReview({ author: '', title: '', text: '', rating: 5 });
+      setReviews(getStoredReviews());
     }
   };
 

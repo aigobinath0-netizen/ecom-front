@@ -34,6 +34,19 @@ import {
   deleteStoredProduct,
   fetchCategoriesFromApi,
   fetchProductsFromApi,
+  getStoredStories,
+  saveStoredStory,
+  deleteStoredStory,
+  fetchStoriesFromApi,
+  getStoredReviews,
+  saveStoredReview,
+  deleteStoredReview,
+  fetchReviewsFromApi,
+  getStoredOrders,
+  saveStoredOrder,
+  deleteStoredOrder,
+  updateStoredOrderStatus,
+  fetchOrdersFromApi,
   normalizeCategorySection,
   apiFetch,
   API_BASE
@@ -41,10 +54,10 @@ import {
 
 export default function Admin({ setCurrentPage, onSelectCategory }) {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('admin_logged_in') === 'true' || true;
+    return localStorage.getItem('admin_logged_in') === 'true';
   });
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   // Main Section Navigation: 'categories', 'products', 'stories', 'reviews'
   const [mainSection, setMainSection] = useState('categories');
@@ -52,8 +65,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
   // Categories & Products state
   const [orderFilter, setOrderFilter] = useState('all');
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState(getStoredCategories);
+  const [products, setProducts] = useState(getStoredProducts);
   const [productFilterCategory, setProductFilterCategory] = useState('all');
 
   // New Category form state
@@ -85,7 +98,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const [storyName, setStoryName] = useState('');
   const [storyImages, setStoryImages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [existingStories, setExistingStories] = useState([]);
+  const [existingStories, setExistingStories] = useState(getStoredStories);
   const [editingStory, setEditingStory] = useState(null);
 
   // Reviews state
@@ -98,11 +111,11 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     verified: true
   });
   const [reviewImage, setReviewImage] = useState(null);
-  const [existingReviews, setExistingReviews] = useState([]);
+  const [existingReviews, setExistingReviews] = useState(getStoredReviews);
   const [editingReview, setEditingReview] = useState(null);
 
   // Orders state
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(getStoredOrders);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
 
@@ -118,13 +131,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
 
   // Initial Data Load with Backend API Sync
   const refreshCategoriesAndProducts = async () => {
-    // 1. Instant cache load
-    const cats = getStoredCategories();
-    const prods = getStoredProducts();
-    setCategories(cats);
-    setProducts(prods);
-
-    // 2. Live fetch from backend API
+    setCategories(getStoredCategories());
+    setProducts(getStoredProducts());
     try {
       const liveCats = await fetchCategoriesFromApi();
       const liveProds = await fetchProductsFromApi();
@@ -140,120 +148,54 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   };
 
   const fetchExistingStories = async () => {
+    setExistingStories(getStoredStories());
     try {
-      const res = await apiFetch('/stories');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          const deletedIds = JSON.parse(localStorage.getItem('deleted_story_ids') || '[]');
-          const editedStories = JSON.parse(localStorage.getItem('edited_stories') || '{}');
-          const active = data
-            .filter(s => !deletedIds.includes(s.id))
-            .map(s => editedStories[s.id] || s);
-          setExistingStories(active.reverse());
-        }
-      }
+      const liveStories = await fetchStoriesFromApi();
+      if (Array.isArray(liveStories)) setExistingStories(liveStories);
     } catch (err) {
       console.error(err);
     }
   };
 
   const fetchExistingReviews = async () => {
+    setExistingReviews(getStoredReviews());
     try {
-      const res = await apiFetch('/reviews');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          const deletedIds = JSON.parse(localStorage.getItem('deleted_review_ids') || '[]');
-          const editedReviews = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
-          const active = data
-            .filter(r => !deletedIds.includes(r.id))
-            .map(r => editedReviews[r.id] || r);
-          setExistingReviews(active.reverse());
-        }
-      }
+      const liveReviews = await fetchReviewsFromApi();
+      if (Array.isArray(liveReviews)) setExistingReviews(liveReviews);
     } catch (err) {
       console.error(err);
     }
   };
 
   const fetchExistingOrders = async () => {
-    let combinedOrders = [];
+    setOrders(getStoredOrders());
     try {
-      // Fetch from Java Spring Boot backend
-      const response = await apiFetch('/orders');
-      if (response.ok) {
-        const dbOrders = await response.json();
-        
-        // Parse items and customer strings from database back into objects
-        const parsedDbOrders = (dbOrders || []).map(order => {
-          let parsedItems = order.items;
-          let parsedCustomer = order.customer;
-          
-          try {
-            if (typeof order.items === 'string') parsedItems = JSON.parse(order.items);
-          } catch(e) {}
-          
-          try {
-            if (typeof order.customer === 'string') parsedCustomer = JSON.parse(order.customer);
-          } catch(e) {}
-
-          return {
-            ...order,
-            items: parsedItems,
-            customer: parsedCustomer
-          };
-        });
-        combinedOrders = [...parsedDbOrders.reverse()];
-      }
-    } catch (e) {
-      console.warn("Backend orders offline, using local cache", e);
+      const liveOrders = await fetchOrdersFromApi();
+      if (Array.isArray(liveOrders)) setOrders(liveOrders);
+    } catch (err) {
+      console.error(err);
     }
-
-    // Always merge with local storage as a fallback
-    try {
-      let storedOrders = JSON.parse(localStorage.getItem('customer_orders') || '[]');
-      if (Array.isArray(storedOrders)) {
-        const existingIds = new Set(combinedOrders.map(o => o.orderId));
-        const missingLocalOrders = storedOrders.filter(o => !existingIds.has(o.orderId));
-        combinedOrders = [...missingLocalOrders, ...combinedOrders];
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    
-    setOrders(combinedOrders);
   };
 
   const deleteOrder = async (orderIdToDelete) => {
     if (!window.confirm(`Are you sure you want to delete order "${orderIdToDelete}"?`)) return;
     try {
-      const updatedOrders = orders.filter(o => o.orderId !== orderIdToDelete);
-      setOrders(updatedOrders);
-      setSelectedOrder(prev => (prev && prev.orderId === orderIdToDelete ? null : prev));
-      localStorage.setItem('customer_orders', JSON.stringify(updatedOrders));
-      await apiFetch(`/orders/${orderIdToDelete}`, { method: 'DELETE' });
+      await deleteStoredOrder(orderIdToDelete);
+      setOrders(getStoredOrders());
+      setSelectedOrder(prev => (prev && (prev.orderId === orderIdToDelete || String(prev.id) === String(orderIdToDelete)) ? null : prev));
     } catch (err) {
-      console.error('Failed to delete order from backend:', err);
+      console.error('Failed to delete order:', err);
     }
   };
 
   const toggleOrderStatus = async (orderId, currentPaidStatus) => {
     const newStatus = !currentPaidStatus;
     try {
-      setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, isPaid: newStatus } : o));
-      setSelectedOrder(prev => (prev && prev.orderId === orderId ? { ...prev, isPaid: newStatus } : prev));
-      const local = JSON.parse(localStorage.getItem('customer_orders') || '[]');
-      const updatedLocal = local.map(o => o.orderId === orderId ? { ...o, isPaid: newStatus } : o);
-      localStorage.setItem('customer_orders', JSON.stringify(updatedLocal));
-
-      await apiFetch(`/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPaid: newStatus })
-      });
+      await updateStoredOrderStatus(orderId, newStatus);
+      setOrders(getStoredOrders());
+      setSelectedOrder(prev => (prev && (prev.orderId === orderId || String(prev.id) === String(orderId)) ? { ...prev, isPaid: newStatus } : prev));
     } catch (err) {
-      console.error('Failed to toggle order status on backend:', err);
+      console.error('Failed to toggle order status:', err);
     }
   };
 
@@ -264,7 +206,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       fetchExistingReviews();
       fetchExistingOrders();
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, mainSection]);
 
   // CATEGORY HANDLERS
   const handleCategoryImgUpload = (e) => {
@@ -435,47 +377,28 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       return;
     }
     setIsUploading(true);
+    const storyId = 'story-' + Date.now();
     const payload = {
+      id: storyId,
       name: storyName,
       img: storyImages[0] || null,
-      images: storyImages
+      images: storyImages,
+      time: 'Just now'
     };
 
-    try {
-      await apiFetch('/stories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (err) {}
-
-    try {
-      const local = JSON.parse(localStorage.getItem('custom_stories') || '[]');
-      localStorage.setItem('custom_stories', JSON.stringify([payload, ...local]));
-    } catch (e) {}
-
+    await saveStoredStory(payload);
+    await fetchExistingStories();
     setIsUploading(false);
     setStoryName('');
     setStoryImages([]);
     setActiveSubTab('manage-stories');
-    fetchExistingStories();
     alert('Story Section uploaded successfully with ' + payload.images.length + ' slides!');
   };
 
   const handleDeleteStory = async (id) => {
     if (!window.confirm('Are you sure you want to delete this story?')) return;
-    try {
-      await apiFetch(`/stories/${id}`, { method: 'DELETE' });
-    } catch (e) {}
-
-    try {
-      const deleted = JSON.parse(localStorage.getItem('deleted_story_ids') || '[]');
-      if (!deleted.includes(id)) {
-        localStorage.setItem('deleted_story_ids', JSON.stringify([...deleted, id]));
-      }
-    } catch (e) {}
-
-    setExistingStories(prev => prev.filter(s => s.id !== id));
+    await deleteStoredStory(id);
+    await fetchExistingStories();
   };
 
   const handleStartEditStory = (story) => {
@@ -517,24 +440,12 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       id: editingStory.id,
       name: editingStory.name,
       img: editingStory.images[0] || null,
-      images: editingStory.images
+      images: editingStory.images,
+      time: 'Recently updated'
     };
 
-    try {
-      await apiFetch(`/stories/${editingStory.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (err) {}
-
-    try {
-      const edited = JSON.parse(localStorage.getItem('edited_stories') || '{}');
-      edited[editingStory.id] = payload;
-      localStorage.setItem('edited_stories', JSON.stringify(edited));
-    } catch (err) {}
-
-    setExistingStories(prev => prev.map(s => s.id === editingStory.id ? payload : s));
+    await saveStoredStory(payload);
+    await fetchExistingStories();
     setEditingStory(null);
     alert('Story updated successfully!');
   };
@@ -558,24 +469,16 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       return;
     }
     setIsUploading(true);
+    const revId = 'rev-' + Date.now();
     const payload = {
       ...reviewData,
-      img: reviewImage
+      id: revId,
+      img: reviewImage,
+      createdAt: new Date().toISOString()
     };
 
-    try {
-      await apiFetch('/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (err) {}
-
-    try {
-      const local = JSON.parse(localStorage.getItem('custom_reviews') || '[]');
-      localStorage.setItem('custom_reviews', JSON.stringify([payload, ...local]));
-    } catch (e) {}
-
+    await saveStoredReview(payload);
+    setExistingReviews(getStoredReviews());
     setIsUploading(false);
     setReviewData({
       author: '',
@@ -587,24 +490,13 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     });
     setReviewImage(null);
     setActiveSubTab('manage-reviews');
-    fetchExistingReviews();
     alert('Customer Review published successfully!');
   };
 
   const handleDeleteReview = async (id) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return;
-    try {
-      await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
-    } catch (e) {}
-
-    try {
-      const deleted = JSON.parse(localStorage.getItem('deleted_review_ids') || '[]');
-      if (!deleted.includes(id)) {
-        localStorage.setItem('deleted_review_ids', JSON.stringify([...deleted, id]));
-      }
-    } catch (e) {}
-
-    setExistingReviews(prev => prev.filter(r => r.id !== id));
+    await deleteStoredReview(id);
+    await fetchExistingReviews();
   };
 
   const handleStartEditReview = (review) => {
@@ -627,22 +519,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       return;
     }
     const payload = { ...editingReview };
-
-    try {
-      await apiFetch(`/reviews/${editingReview.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (err) {}
-
-    try {
-      const edited = JSON.parse(localStorage.getItem('edited_reviews') || '{}');
-      edited[editingReview.id] = payload;
-      localStorage.setItem('edited_reviews', JSON.stringify(edited));
-    } catch (err) {}
-
-    setExistingReviews(prev => prev.map(r => r.id === editingReview.id ? payload : r));
+    await saveStoredReview(payload);
+    await fetchExistingReviews();
     setEditingReview(null);
     alert('Review updated successfully!');
   };
@@ -721,6 +599,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
             onClick={() => {
               localStorage.removeItem('admin_logged_in');
               setIsLoggedIn(false);
+              setUsername('');
+              setPassword('');
             }}
             className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 rounded-xl transition-colors"
           >
