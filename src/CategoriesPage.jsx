@@ -250,11 +250,24 @@ export default function CategoriesPage({
                     <h3 className="text-xs sm:text-sm font-semibold text-zinc-800 group-hover:text-black line-clamp-1">
                       {prod.title}
                     </h3>
-                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5 text-xs sm:text-sm">
-                      <span className="font-extrabold text-zinc-950">₹{prod.price || 499}</span>
-                      <span className="text-[11px] sm:text-xs text-zinc-400 line-through">₹{prod.oldPrice || 999}</span>
-                      <span className="font-bold text-[11px] sm:text-xs text-emerald-600">{prod.off || '50% off'}</span>
-                    </div>
+                    {(() => {
+                      const isTwo = Boolean(selectedCat?.hasTwoPhotos) || Boolean(prod.hasTwoPhotos);
+                      const mult = isTwo ? 2 : 1;
+                      const pPrice = (Number(prod.price) || 499) * mult;
+                      const pOldPrice = (Number(prod.oldPrice) || 999) * mult;
+                      return (
+                        <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5 text-xs sm:text-sm flex-wrap">
+                          <span className="font-extrabold text-zinc-950">₹{pPrice}</span>
+                          {isTwo && (
+                            <span className="text-[9px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+                              2 Covers
+                            </span>
+                          )}
+                          <span className="text-[11px] sm:text-xs text-zinc-400 line-through">₹{pOldPrice}</span>
+                          <span className="font-bold text-[11px] sm:text-xs text-emerald-600">{prod.off || '50% off'}</span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

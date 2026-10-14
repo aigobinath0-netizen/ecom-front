@@ -178,6 +178,13 @@ export default function Cart({
                       )}
 
                       {/* 2 Photos & Custom Texts Display */}
+                      {(item.hasTwoPhotos || (item.photo1 && item.photo2)) && (
+                        <div className="mt-1.5">
+                          <span className="text-[10px] font-black uppercase text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
+                            Set of 2 Covers Included
+                          </span>
+                        </div>
+                      )}
                       {(item.photo1 || item.photo2 || item.text1 || item.text2) && (
                         <div className="mt-2.5 pt-2 border-t border-zinc-100 flex flex-wrap items-center gap-2">
                           {item.photo1 && (

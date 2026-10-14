@@ -97,12 +97,13 @@ export default function Product({
 }) {
   const currentTitle = selectedProduct?.title || "Murugar Acrylic glass case";
   const currentImage = selectedProduct?.image || "/images/12857815f64121652110d55a.jpg";
-  const currentPrice = selectedProduct?.price || 499;
-  const currentOldPrice = selectedProduct?.oldPrice || 999;
+  const rawPrice = Number(selectedProduct?.price) || 499;
+  const rawOldPrice = Number(selectedProduct?.oldPrice) || 999;
   const currentOff = selectedProduct?.off || "50% off";
 
   const [mainImage, setMainImage] = useState(currentImage);
   const [selectedModel, setSelectedModel] = useState('');
+  const [selectedModel2, setSelectedModel2] = useState('');
   const [wording, setWording] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(null);
   const [categoriesList, setCategoriesList] = useState(getStoredCategories);
@@ -201,11 +202,16 @@ export default function Product({
     }
   }
 
+  // For 2 image selection, it is a 2-cover combo, so charge 2 cover price:
+  const coverMultiplier = hasTwoPhotos ? 2 : 1;
+  const currentPrice = rawPrice * coverMultiplier;
+  const currentOldPrice = rawOldPrice * coverMultiplier;
+
   // State for Gold Plate / Print Option
   const [customPlateText, setCustomPlateText] = useState('');
   const [selectedTextOption, setSelectedTextOption] = useState('gold'); // 'gold' (Gold Plate) | 'print' (Print)
   const goldPlateSurcharge = (hasGoldPlate && selectedTextOption === 'gold') ? 99 : 0;
-  const effectivePrice = (Number(currentPrice) || 499) + goldPlateSurcharge;
+  const effectivePrice = currentPrice + goldPlateSurcharge;
 
   // State for 2 Photos & Custom Texts
   const [photo1, setPhoto1] = useState(null);
@@ -259,14 +265,20 @@ export default function Product({
   };
 
   const buildCartItem = () => {
+    const formattedModel = (hasTwoPhotos && selectedModel2 && selectedModel2.trim() && selectedModel2 !== selectedModel)
+      ? `Cover 1: ${selectedModel} | Cover 2: ${selectedModel2}`
+      : selectedModel;
+
     return {
-      id: `${selectedProduct?.id || currentTitle}-${selectedModel}-${selectedTextOption}-${customPlateText}-${wording}-${Date.now()}`,
-      title: currentTitle,
+      id: `${selectedProduct?.id || currentTitle}-${selectedModel}-${selectedModel2}-${selectedTextOption}-${customPlateText}-${wording}-${Date.now()}`,
+      title: hasTwoPhotos ? `${currentTitle} (Set of 2 Covers)` : currentTitle,
       image: currentImage,
       price: effectivePrice,
       basePrice: currentPrice,
+      singleCoverPrice: rawPrice,
+      coverMultiplier,
       oldPrice: currentOldPrice,
-      model: selectedModel,
+      model: formattedModel,
       wording: wording || null,
       photo1: photo1 || null,
       photo2: photo2 || null,
@@ -335,6 +347,11 @@ export default function Product({
                 <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-4 tracking-tight">{currentTitle}</h1>
                 <div className="flex items-center gap-3 mb-2 flex-wrap">
                   <span className="text-2xl font-black text-zinc-900">₹{effectivePrice}</span>
+                  {hasTwoPhotos && (
+                    <span className="text-[11px] font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
+                      2 Covers Combo (₹{rawPrice} × 2)
+                    </span>
+                  )}
                   {goldPlateSurcharge > 0 && (
                     <span className="text-[10px] sm:text-[11px] font-black text-amber-600 tracking-wider uppercase">
                       INCL. +₹99 PLATE
@@ -372,7 +389,7 @@ export default function Product({
             <div className="bg-zinc-50/80 rounded-2xl p-6 mb-6 border border-zinc-100">
               <div className="flex items-center justify-between mb-3">
                 <label className="block text-xs font-bold text-zinc-900 uppercase tracking-wider">
-                  CHOOSE YOUR PHONE MODEL
+                  {hasTwoPhotos ? 'CHOOSE PHONE MODEL (COVER 1)' : 'CHOOSE YOUR PHONE MODEL'}
                 </label>
                 {selectedModel && (
                   <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
@@ -387,7 +404,30 @@ export default function Product({
                 onChange={setSelectedModel}
               />
 
-              <p className="text-xs text-zinc-500">
+              {hasTwoPhotos && (
+                <div className="mt-4 pt-4 border-t border-zinc-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                      CHOOSE PHONE MODEL (COVER 2 - OPTIONAL)
+                    </label>
+                    {selectedModel2 && (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Cover 2 Selected
+                      </span>
+                    )}
+                  </div>
+                  <SearchableSelect
+                    optionsByBrand={PHONE_MODELS_BY_BRAND}
+                    value={selectedModel2}
+                    onChange={setSelectedModel2}
+                  />
+                  <p className="text-[11px] text-zinc-400 mt-1">
+                    Leave blank if both covers are for the same phone model ({selectedModel || 'selected above'}).
+                  </p>
+                </div>
+              )}
+
+              <p className="text-xs text-zinc-500 mt-2">
                 If your model is not found, kindly message us on WhatsApp.
               </p>
             </div>
@@ -497,7 +537,7 @@ export default function Product({
                     </h3>
                   </div>
                   <p className="text-xs text-zinc-500 mb-5">
-                    This Magic Case needs 2 photos to print — both are required.
+                    This combo includes 2 phone covers — please upload Photo 1 and Photo 2.
                   </p>
 
                   {/* PHOTO 1 */}

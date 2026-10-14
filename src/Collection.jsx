@@ -262,9 +262,21 @@ export default function Collection({
                   </div>
 
                   {/* Price in clean black text */}
-                  <p className="text-xs sm:text-sm font-semibold text-zinc-950 mt-1">
-                    from Rs. {prod.price}.00
-                  </p>
+                  {(() => {
+                    const isTwo = Boolean(currentCat?.hasTwoPhotos) || Boolean(prod.hasTwoPhotos);
+                    const mult = isTwo ? 2 : 1;
+                    const cPrice = (Number(prod.price) || 499) * mult;
+                    return (
+                      <p className="text-xs sm:text-sm font-semibold text-zinc-950 mt-1 flex items-center justify-center gap-1.5">
+                        <span>from Rs. {cPrice}.00</span>
+                        {isTwo && (
+                          <span className="text-[9px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+                            2 Covers
+                          </span>
+                        )}
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
             ))}

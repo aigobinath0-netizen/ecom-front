@@ -97,6 +97,7 @@ export default function Checkout({
       goldOption: item.goldOption || null,
       customText: item.customText || item.customPlateText || null,
       platePrice: item.platePrice || 0,
+      hasTwoPhotos: Boolean(item.hasTwoPhotos || (item.photo1 && item.photo2)),
       image: (typeof item.image === 'string' && item.image.startsWith('data:') && item.image.length > 500)
         ? '/images/00e44de62ec83c768bb02d8f.jpg'
         : (item.image || '/images/00e44de62ec83c768bb02d8f.jpg')

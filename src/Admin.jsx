@@ -23,7 +23,8 @@ import {
   Clock,
   FileText,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 import { 
   getStoredCategories, 
@@ -120,7 +121,47 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   // Orders state
   const [orders, setOrders] = useState(getStoredOrders);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
+
+  const handleDownloadPhoto = (dataUrl, filename = 'order-photo.jpg') => {
+    if (!dataUrl) return;
+    try {
+      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Failed to download image:', err);
+      const win = window.open();
+      if (win) {
+        win.document.write(`<img src="${dataUrl}" style="max-width:100%"/>`);
+      }
+    }
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -2731,7 +2772,14 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                 </p>
                                 <p>
                                   <span className="font-bold text-zinc-700">Qty × Price:</span>{' '}
-                                  <span>{item?.quantity || 1} × ₹{item?.price || 0}</span>
+                                  <span>
+                                    {item?.quantity || 1} × ₹{item?.price || 0}
+                                    {(item?.hasTwoPhotos || (item?.photo1 && item?.photo2)) && (
+                                      <span className="ml-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+                                        (2 Covers)
+                                      </span>
+                                    )}
+                                  </span>
                                 </p>
                                 {item?.customName && (
                                   <p className="col-span-1 sm:col-span-2">
@@ -2746,42 +2794,114 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                   </p>
                                 )}
                                 {item?.customPhoto && (
-                                  <div className="col-span-1 sm:col-span-2 flex items-center gap-2 mt-1">
-                                    <span className="font-bold text-zinc-700">Custom Photo:</span>
-                                    <a
-                                      href={item.customPhoto}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
-                                    >
-                                      View Uploaded Photo &rarr;
-                                    </a>
+                                  <div className="col-span-1 sm:col-span-2 flex flex-wrap items-center gap-2 mt-1.5 p-2 bg-blue-50/70 rounded-xl border border-blue-200">
+                                    <img
+                                      src={item.customPhoto}
+                                      alt="Custom Photo"
+                                      className="w-10 h-12 object-cover rounded-md border border-blue-300 cursor-pointer shadow-xs hover:opacity-90"
+                                      onClick={() => setPreviewImage({
+                                        url: item.customPhoto,
+                                        title: `${item.title || 'Product'} - Custom Photo`,
+                                        filename: `Order-${selectedOrder.orderId}-custom-photo.jpg`
+                                      })}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-[11px] font-bold text-blue-900 block">Custom Photo</span>
+                                      <div className="flex items-center gap-1.5 mt-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewImage({
+                                            url: item.customPhoto,
+                                            title: `${item.title || 'Product'} - Custom Photo`,
+                                            filename: `Order-${selectedOrder.orderId}-custom-photo.jpg`
+                                          })}
+                                          className="text-[11px] font-bold text-blue-800 hover:text-blue-950 bg-white border border-blue-200 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                        >
+                                          <Eye className="w-3.5 h-3.5" /> View Photo
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDownloadPhoto(item.customPhoto, `Order-${selectedOrder.orderId}-custom-photo.jpg`)}
+                                          className="text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                                        >
+                                          <Download className="w-3.5 h-3.5" /> Download Photo
+                                        </button>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
                                 {item?.photo1 && (
-                                  <div className="col-span-1 sm:col-span-2 flex items-center gap-2 mt-1">
-                                    <span className="font-bold text-zinc-700">Photo 1:</span>
-                                    <a
-                                      href={item.photo1}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded"
-                                    >
-                                      📷 View Photo 1 &rarr;
-                                    </a>
+                                  <div className="col-span-1 sm:col-span-2 flex flex-wrap items-center gap-2 mt-1.5 p-2 bg-emerald-50/70 rounded-xl border border-emerald-200">
+                                    <img
+                                      src={item.photo1}
+                                      alt="Photo 1"
+                                      className="w-10 h-12 object-cover rounded-md border border-emerald-300 cursor-pointer shadow-xs hover:opacity-90"
+                                      onClick={() => setPreviewImage({
+                                        url: item.photo1,
+                                        title: `${item.title || 'Product'} - Photo 1`,
+                                        filename: `Order-${selectedOrder.orderId}-Photo1.jpg`
+                                      })}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-[11px] font-bold text-emerald-900 block">Photo 1</span>
+                                      <div className="flex items-center gap-1.5 mt-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewImage({
+                                            url: item.photo1,
+                                            title: `${item.title || 'Product'} - Photo 1`,
+                                            filename: `Order-${selectedOrder.orderId}-Photo1.jpg`
+                                          })}
+                                          className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-white border border-emerald-200 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                        >
+                                          <Eye className="w-3.5 h-3.5" /> View Photo 1
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDownloadPhoto(item.photo1, `Order-${selectedOrder.orderId}-Photo1.jpg`)}
+                                          className="text-[11px] font-bold text-white bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                                        >
+                                          <Download className="w-3.5 h-3.5" /> Download Photo 1
+                                        </button>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
                                 {item?.photo2 && (
-                                  <div className="col-span-1 sm:col-span-2 flex items-center gap-2 mt-1">
-                                    <span className="font-bold text-zinc-700">Photo 2:</span>
-                                    <a
-                                      href={item.photo2}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded"
-                                    >
-                                      📷 View Photo 2 &rarr;
-                                    </a>
+                                  <div className="col-span-1 sm:col-span-2 flex flex-wrap items-center gap-2 mt-1.5 p-2 bg-emerald-50/70 rounded-xl border border-emerald-200">
+                                    <img
+                                      src={item.photo2}
+                                      alt="Photo 2"
+                                      className="w-10 h-12 object-cover rounded-md border border-emerald-300 cursor-pointer shadow-xs hover:opacity-90"
+                                      onClick={() => setPreviewImage({
+                                        url: item.photo2,
+                                        title: `${item.title || 'Product'} - Photo 2`,
+                                        filename: `Order-${selectedOrder.orderId}-Photo2.jpg`
+                                      })}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-[11px] font-bold text-emerald-900 block">Photo 2</span>
+                                      <div className="flex items-center gap-1.5 mt-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewImage({
+                                            url: item.photo2,
+                                            title: `${item.title || 'Product'} - Photo 2`,
+                                            filename: `Order-${selectedOrder.orderId}-Photo2.jpg`
+                                          })}
+                                          className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-white border border-emerald-200 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                        >
+                                          <Eye className="w-3.5 h-3.5" /> View Photo 2
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDownloadPhoto(item.photo2, `Order-${selectedOrder.orderId}-Photo2.jpg`)}
+                                          className="text-[11px] font-bold text-white bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                                        >
+                                          <Download className="w-3.5 h-3.5" /> Download Photo 2
+                                        </button>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
                                 {item?.text1 && (
@@ -2845,6 +2965,59 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                         Close
                       </button>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Lightbox Image Preview Modal */}
+            {previewImage && (
+              <div 
+                className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+                onClick={() => setPreviewImage(null)}
+              >
+                <div 
+                  className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-xl w-full max-h-[92vh] flex flex-col border border-zinc-200 animate-in zoom-in-95 duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50">
+                    <div>
+                      <h4 className="font-bold text-zinc-900 text-sm">{previewImage.title}</h4>
+                      <p className="text-[11px] text-zinc-500 font-mono mt-0.5">{previewImage.filename}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadPhoto(previewImage.url, previewImage.filename)}
+                        className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs cursor-pointer shadow-sm transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Download
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImage(null)}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-black hover:bg-zinc-200 transition-colors cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-zinc-950 flex items-center justify-center overflow-auto max-h-[68vh]">
+                    <img 
+                      src={previewImage.url} 
+                      alt={previewImage.title} 
+                      className="max-h-[64vh] w-auto object-contain rounded-lg shadow-lg"
+                    />
+                  </div>
+                  <div className="p-3 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between">
+                    <span className="text-xs text-zinc-500">Customer image in original resolution</span>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPhoto(previewImage.url, previewImage.filename)}
+                      className="flex items-center gap-1.5 bg-zinc-900 hover:bg-black text-white font-bold px-4 py-2 rounded-xl text-xs cursor-pointer transition-colors shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Download Photo
+                    </button>
                   </div>
                 </div>
               </div>
