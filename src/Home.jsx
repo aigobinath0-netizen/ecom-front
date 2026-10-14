@@ -1,24 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, ShieldCheck, Headphones } from 'lucide-react';
+import { Truck, ShieldCheck, Headphones, ChevronDown, ChevronUp } from 'lucide-react';
 import {
-  CATEGORY_SECTIONS,
   getStoredCategories,
   fetchCategoriesFromApi,
   normalizeCategorySection
 } from './categoryData';
 import heroVideo from './assets/watermark-removed (1).mp4';
 
+// 3 Main Topics matching user's paper sketch: Cover, Temper Glass, Skin
+const HOME_SECTIONS = [
+  {
+    id: 'phone_cover',
+    title: 'Phone Cover',
+    tag: 'Cover',
+    badge: 'Popular',
+    subtitle: 'Ready Designs & Trendy Acrylic Glass Cases'
+  },
+  {
+    id: 'temper_glass',
+    title: 'Phone Temper Glass',
+    tag: 'Tempered Glass',
+    badge: 'Protection',
+    subtitle: '9H Extreme Anti-Scratch Screen & Lens Protection'
+  },
+  {
+    id: 'laptop_skin',
+    title: 'Phone & Laptop Skin',
+    tag: 'Skin',
+    badge: 'Custom Style',
+    subtitle: 'Premium 3M Textured Wraps & Precision Skins'
+  }
+];
+
 export default function Home({ setCurrentPage, onSelectCategory }) {
   const [categories, setCategories] = useState(getStoredCategories());
-  const [activeSectionId, setActiveSectionId] = useState('phone_cover');
+  const [expandedSections, setExpandedSections] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. Initial cached state
+    // 1. Initial cached state from localStorage (only real categories from Spring Boot backend)
     setCategories(getStoredCategories());
 
-    // 2. Fetch live data from server
+    // 2. Fetch live data from Spring Boot backend API
     fetchCategoriesFromApi().then(cats => {
       if (Array.isArray(cats)) setCategories(cats);
     });
@@ -29,12 +53,6 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
     section: normalizeCategorySection(c)
   }));
 
-  const activeCategories = activeSectionId === 'all'
-    ? allWithSections
-    : allWithSections.filter(c => c.section === activeSectionId);
-  const displayCategories = activeCategories;
-  const currentSection = CATEGORY_SECTIONS.find(s => s.id === activeSectionId) || CATEGORY_SECTIONS[0];
-
   const handleCategoryClick = (cat) => {
     if (onSelectCategory) {
       onSelectCategory(cat);
@@ -44,14 +62,22 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Toggle View All directly on the Home page - NEVER navigate away to /categories
+  const handleToggleViewAll = (sectionId) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
+
   return (
     <main className="flex-1 bg-white text-zinc-900 pb-20">
-      {/* 0. TOP GOLDEN BANNER (MATCHING ZAPVI SCREENSHOT) */}
+      {/* 0. TOP GOLDEN BANNER */}
       <div className="bg-[#f59e0b] text-zinc-950 text-xs sm:text-[13px] font-black py-2 px-4 text-center tracking-wide uppercase shadow-inner">
         Your Design. Your Style. Your Pravar.
       </div>
 
-      {/* 1. TOP SLEEK MARQUEE (MINIMALIST LUXURY) */}
+      {/* 1. TOP SLEEK MARQUEE */}
       <div className="bg-black text-white py-2.5 overflow-hidden border-b border-zinc-900">
         <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
           {[1, 2, 3, 4].map((i) => (
@@ -72,21 +98,21 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
         </div>
       </div>
 
-      {/* 2. HERO VIDEO (CLEAN BEZEL) */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 pt-4 sm:pt-8">
-        <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-black border border-zinc-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.06)]" style={{ aspectRatio: '16 / 9' }}>
+      {/* 2. HERO VIDEO (Full End-to-End Banner matching Zapvi style) */}
+      <section className="w-full overflow-hidden">
+        <div className="relative w-full h-[220px] sm:h-[300px] md:h-[360px] lg:h-[420px] xl:h-[460px] bg-black overflow-hidden">
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center block"
             src={heroVideo}
           />
         </div>
       </section>
 
-      {/* 3. VALUE PROPOSITIONS STRIP (CLEAN MINIMAL) */}
+      {/* 3. VALUE PROPOSITIONS STRIP */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-6 sm:mt-10">
         <div className="grid grid-cols-3 gap-3 sm:gap-8 border-y border-zinc-100 py-4 sm:py-6 text-center">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
@@ -113,101 +139,128 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
         </div>
       </section>
 
-      {/* 4. SPLIT-RAIL CATEGORY EXPLORER (SQUARE CARDS ON HOME) */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12">
-        <div className="flex flex-row border-y border-zinc-200/80 bg-white">
+      {/* ========================================================================= */}
+      {/* 4. 3 TOPICS WITH STRICT 3*3 GRID (MATCHING USER PAPER SKETCH)              */}
+      {/* ========================================================================= */}
+      <div className="space-y-14 sm:space-y-20 mt-10 sm:mt-14">
+        {HOME_SECTIONS.map((section) => {
+          // Strictly real categories belonging to this section from Spring Boot backend
+          const sectionCats = allWithSections.filter(c => c.section === section.id);
+          const isExpanded = Boolean(expandedSections[section.id]);
+          
+          // If expanded, show all categories in this section; otherwise show initial 3x3 layout (first 9)
+          const itemsToDisplay = isExpanded ? sectionCats : sectionCats.slice(0, 9);
+          const hasMoreThan9 = sectionCats.length > 9;
 
-          {/* Left Vertical Navigation Rail (Zapvi Style) */}
-          <aside className="w-20 sm:w-24 md:w-28 shrink-0 bg-white border-r border-zinc-200 py-3 sm:py-5">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              {CATEGORY_SECTIONS.map((sec) => {
-                const isActive = activeSectionId === sec.id;
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => setActiveSectionId(sec.id)}
-                    className={`relative w-full flex flex-col items-center justify-center py-1.5 px-1 transition-all cursor-pointer ${isActive
-                      ? 'text-[#ea580c]'
-                      : 'text-zinc-700 hover:text-black'
-                      }`}
-                  >
-                    {/* Active Orange Bar on Left Edge */}
-                    {isActive && (
-                      <div className="absolute left-0 top-1 bottom-1 w-1 sm:w-1.5 bg-[#ea580c] rounded-r" />
-                    )}
-
-                    {/* Circular Icon with Orange Ring when Active */}
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full p-0.5 overflow-hidden transition-transform duration-300 ${isActive
-                      ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/30 scale-105 shadow-sm bg-white'
-                      : 'border border-zinc-200 bg-[#f4f4f6]'
-                      }`}>
-                      <img
-                        src={sec.icon}
-                        alt={sec.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </div>
-
-                    {/* Label below icon */}
-                    <span className={`text-[11px] sm:text-xs tracking-tight mt-1 font-bold text-center leading-tight line-clamp-2 px-1 ${isActive ? 'text-[#ea580c] font-black' : 'text-zinc-700'
-                      }`}>
-                      {sec.shortName || sec.name}
+          return (
+            <section key={section.id} id={`section-${section.id}`} className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16">
+              {/* Centered Topic Header Container (aligned with 3*3 grid) */}
+              <div className="max-w-[420px] mx-auto mb-3.5 sm:mb-5 pb-2 border-b border-zinc-200 flex flex-col sm:flex-row sm:items-end justify-between gap-1.5">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="bg-[#ea580c] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-xs">
+                      {section.tag}
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-
-          {/* Right Square Categories Area */}
-          <div className="flex-1 p-3 sm:p-5 lg:p-7 min-w-0 bg-white flex flex-col justify-start">
-            {/* Section Headline matching Zapvi screenshot */}
-            <div className="mb-4 sm:mb-6">
-              <h2 className="text-base sm:text-lg md:text-xl font-black text-zinc-900 uppercase tracking-wide leading-tight">
-                {currentSection.headline || 'READY DESIGNS AND TRENDY CASE'}
-              </h2>
-              <p className="text-zinc-500 text-xs sm:text-sm font-medium mt-0.5">
-                {currentSection.subtitle}
-              </p>
-            </div>
-
-            {/* Square Category Cards on Home Page: 3 columns on mobile (not round) */}
-            {displayCategories.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5 sm:gap-4 md:gap-5">
-                {displayCategories.map((cat, idx) => (
-                  <div
-                    key={cat.id || idx}
-                    onClick={() => handleCategoryClick(cat)}
-                    className="group flex flex-col items-center cursor-pointer select-none text-center"
-                  >
-                    {/* Square Card Container */}
-                    <div className="w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-[#f4f4f6] border border-zinc-200 shadow-xs group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] group-hover:ring-2 group-hover:ring-[#ea580c]/30 transition-all duration-300 p-1 sm:p-1.5 flex items-center justify-center">
-                      <img
-                        src={cat.image}
-                        alt={cat.title}
-                        className="w-full h-full object-cover rounded-lg sm:rounded-xl"
-                        loading="lazy"
-                      />
-                    </div>
-
-                    {/* Title Directly Underneath */}
-                    <h4 className="mt-1.5 sm:mt-2 text-center text-[11px] sm:text-xs md:text-[13px] font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-full transition-colors">
-                      {cat.title}
-                    </h4>
+                    <span className="text-zinc-400 text-xs font-semibold">•</span>
+                    <span className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">
+                      {section.badge}
+                    </span>
+                    {sectionCats.length > 0 && (
+                      <>
+                        <span className="text-zinc-400 text-xs font-semibold">•</span>
+                        <span className="text-[#ea580c] text-xs font-bold uppercase tracking-wider">
+                          {sectionCats.length} {sectionCats.length === 1 ? 'Design' : 'Designs'}
+                        </span>
+                      </>
+                    )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center border border-dashed border-zinc-200 rounded-2xl">
-                <p className="text-zinc-400 text-xs sm:text-sm">
-                  No categories in this section yet.
-                </p>
-              </div>
-            )}
-          </div>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-black text-zinc-950 tracking-tight uppercase">
+                    {section.title}
+                  </h2>
+                  <p className="text-zinc-500 text-xs sm:text-[13px] font-medium mt-0.5">
+                    {section.subtitle}
+                  </p>
+                </div>
 
-        </div>
-      </section>
+                {/* Quick Desktop Toggle Button (Stays on Home page) */}
+                {sectionCats.length > 0 && (
+                  <button
+                    onClick={() => handleToggleViewAll(section.id)}
+                    className="hidden sm:inline-flex items-center gap-1 text-xs md:text-xs font-extrabold text-[#ea580c] hover:text-black uppercase tracking-wider transition-colors cursor-pointer group shrink-0 pb-0.5"
+                  >
+                    <span>{isExpanded ? 'Show Less' : 'View All'}</span>
+                    {isExpanded ? (
+                      <ChevronUp size={14} className="group-hover:-translate-y-0.5 transition-transform" />
+                    ) : (
+                      <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* STRICT 3*3 GRID: 3 columns across on all screens matching user's paper drawing [ ] [ ] [ ] */}
+              <div className="max-w-[420px] mx-auto">
+                {itemsToDisplay.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5 transition-all">
+                    {itemsToDisplay.map((cat, idx) => (
+                      <div
+                        key={cat.id || idx}
+                        onClick={() => handleCategoryClick(cat)}
+                        className="group flex flex-col items-center cursor-pointer select-none text-center"
+                      >
+                        {/* Square Card Container */}
+                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-[#f4f4f6] border border-zinc-200 shadow-xs group-hover:shadow-md group-hover:scale-105 group-hover:border-[#ea580c] group-hover:ring-2 group-hover:ring-[#ea580c]/30 transition-all duration-300 p-1 sm:p-1.5 flex items-center justify-center">
+                          <img
+                            src={cat.image}
+                            alt={cat.title}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+
+                        {/* Title Directly Underneath */}
+                        <h4 className="mt-1 sm:mt-1.5 text-center text-[10px] sm:text-xs font-semibold text-zinc-800 group-hover:text-black tracking-tight leading-snug line-clamp-2 max-w-full transition-colors">
+                          {cat.title}
+                        </h4>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-10 text-center border border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
+                    <p className="text-zinc-400 text-xs sm:text-sm font-medium">
+                      No categories added yet for {section.title}.
+                    </p>
+                  </div>
+                )}
+
+                {/* Centered "View All" Button beneath the Grid (Stays on Home Page) */}
+                <div className="mt-5 sm:mt-7 flex flex-col items-center justify-center gap-1.5">
+                  <button
+                    onClick={() => handleToggleViewAll(section.id)}
+                    className="inline-flex items-center gap-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full border-2 border-zinc-900 bg-white hover:bg-black text-zinc-950 hover:text-white font-black text-xs tracking-wider uppercase transition-all duration-200 shadow-xs hover:shadow-md group cursor-pointer active:scale-95"
+                  >
+                    <span>
+                      {isExpanded
+                        ? 'Show Less'
+                        : (hasMoreThan9 ? `View All (${sectionCats.length})` : 'View All')}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp size={15} className="text-zinc-600 group-hover:text-white transition-transform" />
+                    ) : (
+                      <ChevronDown size={15} className="text-zinc-600 group-hover:text-white transition-transform" />
+                    )}
+                  </button>
+
+                  {isExpanded && sectionCats.length > 0 && (
+                    <span className="text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                      Showing all {sectionCats.length} categories on Home Page
+                    </span>
+                  )}
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
     </main>
   );
 }
