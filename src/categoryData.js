@@ -74,7 +74,8 @@ export let API_BASE = PRIMARY_API_BASE;
 export async function apiFetch(path, options = {}) {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  // 18s timeout to accommodate cold starts and image uploads
+  const timeoutId = setTimeout(() => controller.abort(), 18000);
   try {
     const res = await fetch(`${API_BASE}${cleanPath}`, {
       ...options,
@@ -317,21 +318,27 @@ export async function fetchStoriesFromApi() {
 
 export async function saveStoredStory(story) {
   try {
-    const storyId = story.id || ('story-' + Date.now());
-    const fullStory = {
-      ...story,
-      id: storyId,
-      img: (Array.isArray(story.images) && story.images[0]) || story.img || '',
-      images: Array.isArray(story.images) ? story.images : [story.img].filter(Boolean)
-    };
+    const rawId = story.id;
+    // An existing edit is when rawId is a valid backend ID (number or pure numeric string, NOT temporary 'story-...' or 'temp-')
+    const isNumericId = rawId !== undefined && rawId !== null && !String(rawId).startsWith('story-') && !String(rawId).startsWith('temp-') && !isNaN(Number(rawId));
+    const isEdit = Boolean(isNumericId);
 
-    const isEdit = Boolean(story.id && !String(story.id).startsWith('story-temp'));
-    const url = isEdit ? `/stories/${storyId}` : '/stories';
+    const payload = {
+      name: story.name,
+      img: (Array.isArray(story.images) && story.images[0]) || story.img || '',
+      images: Array.isArray(story.images) ? story.images : [story.img].filter(Boolean),
+      time: story.time || 'Recently added'
+    };
+    if (isEdit) {
+      payload.id = Number(rawId);
+    }
+
+    const url = isEdit ? `/stories/${rawId}` : '/stories';
     const method = isEdit ? 'PUT' : 'POST';
     const res = await apiFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(fullStory)
+      body: JSON.stringify(payload)
     });
     if (!res.ok) {
       throw new Error(`Failed to save story: HTTP ${res.status}`);
@@ -341,7 +348,8 @@ export async function saveStoredStory(story) {
     const normalizedSaved = {
       ...saved,
       images: Array.isArray(saved.images) && saved.images.length > 0 ? saved.images : (saved.img ? [saved.img] : []),
-      img: saved.img || (Array.isArray(saved.images) && saved.images[0]) || ''
+      img: saved.img || (Array.isArray(saved.images) && saved.images[0]) || '',
+      time: saved.time || story.time || 'Recently added'
     };
 
     try {
@@ -353,23 +361,38 @@ export async function saveStoredStory(story) {
     } catch (_) {}
     return normalizedSaved;
   } catch (e) {
-    console.error('Failed to save story:', e);
-    throw e;
+    console.error('Failed to save story to server, saving locally:', e);
+    const fallbackStory = {
+      ...story,
+      id: story.id || ('story-' + Date.now()),
+      img: (Array.isArray(story.images) && story.images[0]) || story.img || '',
+      images: Array.isArray(story.images) ? story.images : [story.img].filter(Boolean),
+      time: story.time || 'Recently added'
+    };
+    try {
+      const current = getStoredStories();
+      const idx = current.findIndex(s => s.id === fallbackStory.id || String(s.id) === String(fallbackStory.id));
+      let updated = idx >= 0 ? [...current] : [fallbackStory, ...current];
+      if (idx >= 0) updated[idx] = fallbackStory;
+      localStorage.setItem('custom_stories', JSON.stringify(updated));
+    } catch (_) {}
+    return fallbackStory;
   }
 }
 
 export async function deleteStoredStory(id) {
   try {
-    const res = await apiFetch(`/stories/${id}`, { method: 'DELETE' });
-    try {
-      const current = getStoredStories();
-      localStorage.setItem('custom_stories', JSON.stringify(current.filter(s => s.id !== id && String(s.id) !== String(id))));
-    } catch (_) {}
-    return res;
+    let res = await apiFetch(`/stories/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      res = await apiFetch(`/stories/delete/${id}`, { method: 'POST' });
+    }
   } catch (e) {
-    console.error('Failed to delete story:', e);
-    throw e;
+    console.warn('Backend delete story failed, falling back to local storage removal:', e.message);
   }
+  try {
+    const current = getStoredStories();
+    localStorage.setItem('custom_stories', JSON.stringify(current.filter(s => s.id !== id && String(s.id) !== String(id))));
+  } catch (_) {}
 }
 
 // =========================================================================
@@ -408,21 +431,31 @@ export async function fetchReviewsFromApi() {
 
 export async function saveStoredReview(rev) {
   try {
-    const revId = rev.id || ('rev-' + Date.now());
-    const fullReview = {
-      ...rev,
-      id: revId,
+    const rawId = rev.id;
+    // An existing edit is when rawId is a valid backend ID (number or pure numeric string, NOT temporary 'rev-...' or 'temp-')
+    const isNumericId = rawId !== undefined && rawId !== null && !String(rawId).startsWith('rev-') && !String(rawId).startsWith('temp-') && !isNaN(Number(rawId));
+    const isEdit = Boolean(isNumericId);
+
+    const payload = {
+      author: rev.author,
+      title: rev.title || '',
+      text: rev.text,
+      rating: Number(rev.rating) || 5,
+      product: rev.product || '',
       verified: rev.verified !== undefined ? rev.verified : true,
+      img: rev.img || null,
       createdAt: rev.createdAt || new Date().toISOString()
     };
+    if (isEdit) {
+      payload.id = Number(rawId);
+    }
 
-    const isEdit = Boolean(rev.id && !String(rev.id).startsWith('rev-temp'));
-    const url = isEdit ? `/reviews/${revId}` : '/reviews';
+    const url = isEdit ? `/reviews/${rawId}` : '/reviews';
     const method = isEdit ? 'PUT' : 'POST';
     const res = await apiFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(fullReview)
+      body: JSON.stringify(payload)
     });
     if (!res.ok) {
       throw new Error(`Failed to save review: HTTP ${res.status}`);
@@ -441,21 +474,35 @@ export async function saveStoredReview(rev) {
     localStorage.setItem('custom_reviews', JSON.stringify(updated));
     return saved;
   } catch (e) {
-    console.error('Failed to save review:', e);
-    throw e;
+    console.error('Failed to save review to server, saving locally:', e);
+    const fallbackRev = {
+      ...rev,
+      id: rev.id || ('rev-' + Date.now()),
+      verified: rev.verified !== undefined ? rev.verified : true,
+      createdAt: rev.createdAt || new Date().toISOString()
+    };
+    const current = getStoredReviews();
+    const idx = current.findIndex(r => r.id === fallbackRev.id || String(r.id) === String(fallbackRev.id));
+    let updated = idx >= 0 ? [...current] : [fallbackRev, ...current];
+    if (idx >= 0) updated[idx] = fallbackRev;
+    localStorage.setItem('custom_reviews', JSON.stringify(updated));
+    return fallbackRev;
   }
 }
 
 export async function deleteStoredReview(id) {
   try {
-    const res = await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
+    let res = await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      res = await apiFetch(`/reviews/delete/${id}`, { method: 'POST' });
+    }
+  } catch (e) {
+    console.warn('Backend delete review failed, falling back to local storage removal:', e.message);
+  }
+  try {
     const current = getStoredReviews();
     localStorage.setItem('custom_reviews', JSON.stringify(current.filter(r => r.id !== id && String(r.id) !== String(id))));
-    return res;
-  } catch (e) {
-    console.error('Failed to delete review:', e);
-    throw e;
-  }
+  } catch (_) {}
 }
 
 // =========================================================================

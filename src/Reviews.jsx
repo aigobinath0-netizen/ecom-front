@@ -155,10 +155,10 @@ export default function Reviews() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!newReview.author || !newReview.title || !newReview.text) return;
     try {
       const reviewToSave = {
         ...newReview,
-        id: 'rev-' + Date.now(),
         verified: true,
         createdAt: new Date().toISOString()
       };
@@ -166,8 +166,8 @@ export default function Reviews() {
       setReviews(getStoredReviews());
       setIsModalOpen(false);
       setNewReview({ author: '', title: '', text: '', rating: 5 });
-      // Background re-fetch to ensure sync
-      fetchReviews();
+      // Re-fetch to ensure sync with backend
+      await fetchReviews();
     } catch (error) {
       console.error("Failed to submit review:", error);
       setIsModalOpen(false);

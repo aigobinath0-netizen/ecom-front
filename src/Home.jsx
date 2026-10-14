@@ -113,27 +113,44 @@ export default function Home({ setCurrentPage, onSelectCategory }) {
       </section>
 
       {/* 3. VALUE PROPOSITIONS STRIP */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-16 mt-6 sm:mt-10">
-        <div className="grid grid-cols-3 gap-3 sm:gap-8 border-y border-zinc-100 py-4 sm:py-6 text-center">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-            <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900" strokeWidth={1.75} />
-            <div className="text-left sm:text-left">
-              <h4 className="text-[11px] sm:text-xs font-bold text-zinc-900 uppercase tracking-wide">Free Shipping</h4>
-              <p className="hidden sm:block text-[11px] text-zinc-500">All orders across India</p>
+      <section className="max-w-[1600px] mx-auto px-3 sm:px-8 lg:px-16 mt-4 sm:mt-8">
+        <div className="grid grid-cols-3 divide-x divide-zinc-200/80 border-y border-zinc-200/80 py-3.5 sm:py-5">
+          {/* 1. Free Shipping */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 px-1.5 sm:px-4 text-center sm:text-left">
+            <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900 shrink-0" strokeWidth={1.75} />
+            <div className="text-center sm:text-left">
+              <h4 className="text-[10px] sm:text-xs font-black text-zinc-950 uppercase tracking-tight sm:tracking-wide leading-tight">
+                Free Shipping
+              </h4>
+              <p className="text-[9px] sm:text-[11px] text-zinc-500 font-medium leading-tight mt-0.5">
+                All orders across India
+              </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 border-x border-zinc-100">
-            <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900" strokeWidth={1.75} />
-            <div className="text-left sm:text-left">
-              <h4 className="text-[11px] sm:text-xs font-bold text-zinc-900 uppercase tracking-wide">Premium Acrylic</h4>
-              <p className="hidden sm:block text-[11px] text-zinc-500">Anti-scratch & 9H strong</p>
+
+          {/* 2. Premium Acrylic */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 px-1.5 sm:px-4 text-center sm:text-left">
+            <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900 shrink-0" strokeWidth={1.75} />
+            <div className="text-center sm:text-left">
+              <h4 className="text-[10px] sm:text-xs font-black text-zinc-950 uppercase tracking-tight sm:tracking-wide leading-tight">
+                Premium Acrylic
+              </h4>
+              <p className="text-[9px] sm:text-[11px] text-zinc-500 font-medium leading-tight mt-0.5">
+                Anti-scratch & 9H strong
+              </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-            <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900" strokeWidth={1.75} />
-            <div className="text-left sm:text-left">
-              <h4 className="text-[11px] sm:text-xs font-bold text-zinc-900 uppercase tracking-wide">Customer Support</h4>
-              <p className="hidden sm:block text-[11px] text-zinc-500">Instant WhatsApp help</p>
+
+          {/* 3. Customer Support */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 px-1.5 sm:px-4 text-center sm:text-left">
+            <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900 shrink-0" strokeWidth={1.75} />
+            <div className="text-center sm:text-left">
+              <h4 className="text-[10px] sm:text-xs font-black text-zinc-950 uppercase tracking-tight sm:tracking-wide leading-tight">
+                Customer Support
+              </h4>
+              <p className="text-[9px] sm:text-[11px] text-zinc-500 font-medium leading-tight mt-0.5">
+                Instant WhatsApp help
+              </p>
             </div>
           </div>
         </div>

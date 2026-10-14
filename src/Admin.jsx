@@ -377,22 +377,26 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       return;
     }
     setIsUploading(true);
-    const storyId = 'story-' + Date.now();
     const payload = {
-      id: storyId,
       name: storyName,
       img: storyImages[0] || null,
       images: storyImages,
       time: 'Just now'
     };
 
-    await saveStoredStory(payload);
-    await fetchExistingStories();
-    setIsUploading(false);
-    setStoryName('');
-    setStoryImages([]);
-    setActiveSubTab('manage-stories');
-    alert('Story Section uploaded successfully with ' + payload.images.length + ' slides!');
+    try {
+      await saveStoredStory(payload);
+      await fetchExistingStories();
+      setIsUploading(false);
+      setStoryName('');
+      setStoryImages([]);
+      setActiveSubTab('manage-stories');
+      alert('Story Section uploaded successfully with ' + payload.images.length + ' slides!');
+    } catch (err) {
+      console.error(err);
+      setIsUploading(false);
+      alert('Failed to upload story: ' + (err.message || 'Error'));
+    }
   };
 
   const handleDeleteStory = async (id) => {
@@ -469,28 +473,32 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       return;
     }
     setIsUploading(true);
-    const revId = 'rev-' + Date.now();
     const payload = {
       ...reviewData,
-      id: revId,
       img: reviewImage,
       createdAt: new Date().toISOString()
     };
 
-    await saveStoredReview(payload);
-    setExistingReviews(getStoredReviews());
-    setIsUploading(false);
-    setReviewData({
-      author: '',
-      title: '',
-      text: '',
-      rating: 5,
-      product: '',
-      verified: true
-    });
-    setReviewImage(null);
-    setActiveSubTab('manage-reviews');
-    alert('Customer Review published successfully!');
+    try {
+      await saveStoredReview(payload);
+      await fetchExistingReviews();
+      setIsUploading(false);
+      setReviewData({
+        author: '',
+        title: '',
+        text: '',
+        rating: 5,
+        product: '',
+        verified: true
+      });
+      setReviewImage(null);
+      setActiveSubTab('manage-reviews');
+      alert('Customer Review published successfully!');
+    } catch (err) {
+      console.error(err);
+      setIsUploading(false);
+      alert('Failed to publish review: ' + (err.message || 'Error'));
+    }
   };
 
   const handleDeleteReview = async (id) => {
