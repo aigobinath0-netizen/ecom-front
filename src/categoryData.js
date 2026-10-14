@@ -55,30 +55,22 @@ export function normalizeCategorySection(cat) {
   return 'phone_cover';
 }
 
-// API Base URLs
-export const RAILWAY_API_BASE = 'https://ecom-back-production.up.railway.app/api';
+// API Base URLs - Directly connected to Local Spring Boot
 export const LOCAL_API_BASE = 'http://localhost:8081/api';
+export const RAILWAY_API_BASE = 'https://ecom-back-production.up.railway.app/api';
 export const REMOTE_API_BASE = RAILWAY_API_BASE;
 
-const getInitialApiBase = () => {
-  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE) {
-    return import.meta.env.VITE_API_BASE;
-  }
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return LOCAL_API_BASE;
-  }
-  return RAILWAY_API_BASE;
-};
+export const PRIMARY_API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE)
+  ? import.meta.env.VITE_API_BASE
+  : LOCAL_API_BASE;
 
-export const PRIMARY_API_BASE = getInitialApiBase();
 export let API_BASE = PRIMARY_API_BASE;
 
-// Direct, resilient API caller with timeout protection and bidirectional fallback
+// Direct API caller connected to local Spring Boot
 export async function apiFetch(path, options = {}) {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 18000);
-  const fallbackBase = API_BASE === LOCAL_API_BASE ? RAILWAY_API_BASE : LOCAL_API_BASE;
 
   try {
     const res = await fetch(`${API_BASE}${cleanPath}`, {
@@ -86,19 +78,10 @@ export async function apiFetch(path, options = {}) {
       signal: options.signal || controller.signal
     });
     clearTimeout(timeoutId);
-    // If primary returned 4xx or 5xx, try fallbackBase
-    if (!res.ok && (res.status === 415 || res.status === 404 || res.status >= 500)) {
-      try {
-        const fbRes = await fetch(`${fallbackBase}${cleanPath}`, options);
-        if (fbRes.ok) return fbRes;
-      } catch (_) {}
-    }
     return res;
   } catch (err) {
     clearTimeout(timeoutId);
-    try {
-      return await fetch(`${fallbackBase}${cleanPath}`, options);
-    } catch (_) {}
+    console.warn(`Local Spring Boot request to ${API_BASE}${cleanPath} failed:`, err.message);
     throw err;
   }
 }
