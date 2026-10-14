@@ -79,7 +79,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     bannerType: 'split',
     bannerHeadline: 'Make Your Smartphone Case Stand Out From The Crowd',
     startingPrice: 499,
-    hasTwoPhotos: false
+    hasTwoPhotos: false,
+    hasGoldPlate: false
   });
   const [editingCategory, setEditingCategory] = useState(null);
   const [categorySectionFilter, setCategorySectionFilter] = useState('all');
@@ -251,7 +252,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       bannerType: newCategory.bannerType || 'split',
       bannerHeadline: newCategory.bannerHeadline?.trim() || 'Make Your Smartphone Case Stand Out From The Crowd',
       startingPrice: Number(newCategory.startingPrice) || 499,
-      hasTwoPhotos: Boolean(newCategory.hasTwoPhotos)
+      hasTwoPhotos: Boolean(newCategory.hasTwoPhotos),
+      hasGoldPlate: Boolean(newCategory.hasGoldPlate)
     };
 
     await saveStoredCategory(categoryObj);
@@ -264,7 +266,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       bannerType: 'split',
       bannerHeadline: 'Make Your Smartphone Case Stand Out From The Crowd', 
       startingPrice: 499,
-      hasTwoPhotos: false
+      hasTwoPhotos: false,
+      hasGoldPlate: false
     });
     setActiveSubTab('manage-categories');
     alert(`Category "${categoryObj.title}" created successfully under section "${categoryObj.section}"!`);
@@ -281,7 +284,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     if (!editingCategory.title.trim()) return;
     const toSave = {
       ...editingCategory,
-      hasTwoPhotos: Boolean(editingCategory.hasTwoPhotos)
+      hasTwoPhotos: Boolean(editingCategory.hasTwoPhotos),
+      hasGoldPlate: Boolean(editingCategory.hasGoldPlate)
     };
     await saveStoredCategory(toSave);
     await refreshCategoriesAndProducts();
@@ -331,6 +335,7 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       categoryTitle: parentCat?.title || '',
       categorySlug: parentCat?.slug || '',
       hasTwoPhotos: Boolean(parentCat?.hasTwoPhotos),
+      hasGoldPlate: Boolean(parentCat?.hasGoldPlate),
       title: newProduct.title.trim(),
       price: Number(newProduct.price) || 499,
       oldPrice: Number(newProduct.oldPrice) || 999,
@@ -1002,6 +1007,34 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                   </div>
                 </div>
 
+                {/* Gold Plate / Print Option (Gel Case / Name Plate) */}
+                <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/90 shadow-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                          Enable Gold Plate / Print Option?
+                        </label>
+                        <span className="text-[10px] font-black text-amber-900 bg-amber-300/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          ✨ Gold Text (+₹99) / Print
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed">
+                        When enabled, all products in this category will ask customers to enter custom text and choose between Gold Plate (+₹99) and Print (Free). Only this category alone will have this option.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(newCategory.hasGoldPlate)}
+                        onChange={(e) => setNewCategory({ ...newCategory, hasGoldPlate: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-12 h-6.5 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500 shadow-inner"></div>
+                    </label>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   className="bg-zinc-950 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-zinc-800 transition-colors shadow-md text-sm flex items-center gap-2 cursor-pointer"
@@ -1081,6 +1114,11 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                 {cat.hasTwoPhotos && (
                                   <span className="text-[10px] font-black text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-md flex items-center gap-1">
                                     📸 2 Photos Mode
+                                  </span>
+                                )}
+                                {cat.hasGoldPlate && (
+                                  <span className="text-[10px] font-black text-amber-900 bg-amber-200/90 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                    ✨ Gold Plate Mode
                                   </span>
                                 )}
                               </div>
@@ -1918,6 +1956,34 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                 </div>
               </div>
 
+              {/* Gold Plate / Print Option (Gel Case / Name Plate) */}
+              <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/90 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                        Enable Gold Plate / Print Option?
+                      </label>
+                      <span className="text-[10px] font-black text-amber-900 bg-amber-300/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        ✨ Gold Text (+₹99) / Print
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed">
+                      When enabled, all products in this category will ask customers to enter custom text and choose between Gold Plate (+₹99) and Print (Free). Only this category alone will have this option.
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editingCategory.hasGoldPlate)}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, hasGoldPlate: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-12 h-6.5 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500 shadow-inner"></div>
+                  </label>
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
@@ -2728,6 +2794,17 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                   <p className="col-span-1 sm:col-span-2">
                                     <span className="font-bold text-zinc-700">Text 2:</span>{' '}
                                     <span className="bg-amber-100 text-[#ea580c] px-2 py-0.5 rounded font-bold">{item.text2}</span>
+                                  </p>
+                                )}
+                                {item?.customText && (
+                                  <p className="col-span-1 sm:col-span-2">
+                                    <span className="font-bold text-zinc-700">Custom Text:</span>{' '}
+                                    <span className="bg-amber-100 text-[#ea580c] px-2 py-0.5 rounded font-bold">{item.customText}</span>
+                                    {item?.goldOption && (
+                                      <span className="ml-2 text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zinc-200 text-zinc-800">
+                                        {item.goldOption}
+                                      </span>
+                                    )}
                                   </p>
                                 )}
                               </div>

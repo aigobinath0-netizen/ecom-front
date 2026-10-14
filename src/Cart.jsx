@@ -161,6 +161,22 @@ export default function Cart({
                         </p>
                       )}
 
+                      {/* Gold Plate / Print Custom Text */}
+                      {(item.customText || item.customPlateText || item.goldOption) && (
+                        <div className="mt-2 pt-1 flex flex-wrap items-center gap-2">
+                          {(item.customText || item.customPlateText) && (
+                            <span className="text-[11px] bg-amber-50 border border-amber-200 text-amber-950 px-2 py-0.5 rounded font-medium">
+                              Text: <strong className="font-bold">{item.customText || item.customPlateText}</strong>
+                            </span>
+                          )}
+                          {item.goldOption && (
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zinc-900 text-white">
+                              {item.goldOption}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {/* 2 Photos & Custom Texts Display */}
                       {(item.photo1 || item.photo2 || item.text1 || item.text2) && (
                         <div className="mt-2.5 pt-2 border-t border-zinc-100 flex flex-wrap items-center gap-2">

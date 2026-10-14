@@ -113,10 +113,14 @@ export async function fetchCategoriesFromApi() {
         const hasTwo = (sc.hasTwoPhotos !== null && sc.hasTwoPhotos !== undefined)
           ? Boolean(sc.hasTwoPhotos === true || sc.hasTwoPhotos === 'true' || sc.hasTwoPhotos === 1 || sc.hasTwoPhotos === '1')
           : Boolean(localMatch?.hasTwoPhotos === true || localMatch?.hasTwoPhotos === 'true');
+        const hasGold = (sc.hasGoldPlate !== null && sc.hasGoldPlate !== undefined)
+          ? Boolean(sc.hasGoldPlate === true || sc.hasGoldPlate === 'true' || sc.hasGoldPlate === 1 || sc.hasGoldPlate === '1')
+          : Boolean(localMatch?.hasGoldPlate === true || localMatch?.hasGoldPlate === 'true');
         return {
           ...sc,
           section: normalizeCategorySection(sc),
-          hasTwoPhotos: hasTwo
+          hasTwoPhotos: hasTwo,
+          hasGoldPlate: hasGold
         };
       });
 
@@ -139,10 +143,17 @@ export async function saveStoredCategory(cat) {
     cat.hasTwoPhotos === 1 || 
     cat.hasTwoPhotos === '1'
   );
+  const normalizedHasGold = Boolean(
+    cat.hasGoldPlate === true || 
+    cat.hasGoldPlate === 'true' || 
+    cat.hasGoldPlate === 1 || 
+    cat.hasGoldPlate === '1'
+  );
 
   const cleanCat = {
     ...cat,
-    hasTwoPhotos: normalizedHasTwo
+    hasTwoPhotos: normalizedHasTwo,
+    hasGoldPlate: normalizedHasGold
   };
 
   // 1. Immediately update localStorage cache so UI is instantaneous and resilient
@@ -157,14 +168,18 @@ export async function saveStoredCategory(cat) {
     localStorage.setItem('custom_categories', JSON.stringify(custom));
   } catch (_) {}
 
-  // 2. Also update all products under this category in localStorage so products instantly inherit hasTwoPhotos
+  // 2. Also update all products under this category in localStorage so products instantly inherit hasTwoPhotos & hasGoldPlate
   try {
     const customProds = JSON.parse(localStorage.getItem('custom_products') || '[]');
     let prodsChanged = false;
     const updatedProds = customProds.map(p => {
       if (p.categoryId === cleanCat.id || String(p.categoryId) === String(cleanCat.id)) {
         prodsChanged = true;
-        return { ...p, hasTwoPhotos: normalizedHasTwo };
+        return { 
+          ...p, 
+          hasTwoPhotos: normalizedHasTwo,
+          hasGoldPlate: normalizedHasGold 
+        };
       }
       return p;
     });
@@ -188,7 +203,10 @@ export async function saveStoredCategory(cat) {
           ...data,
           hasTwoPhotos: (data.hasTwoPhotos !== null && data.hasTwoPhotos !== undefined)
             ? Boolean(data.hasTwoPhotos === true || data.hasTwoPhotos === 'true')
-            : normalizedHasTwo
+            : normalizedHasTwo,
+          hasGoldPlate: (data.hasGoldPlate !== null && data.hasGoldPlate !== undefined)
+            ? Boolean(data.hasGoldPlate === true || data.hasGoldPlate === 'true')
+            : normalizedHasGold
         };
         const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
         const idx = custom.findIndex(c => c.id === merged.id || String(c.id) === String(merged.id));
@@ -256,9 +274,11 @@ export async function fetchProductsFromApi(categoryId = null) {
       const enriched = serverProds.map(p => {
         const cat = allCats.find(c => c.id === p.categoryId || String(c.id) === String(p.categoryId));
         const hasTwo = Boolean(cat?.hasTwoPhotos) || Boolean(p.hasTwoPhotos);
+        const hasGold = Boolean(cat?.hasGoldPlate) || Boolean(p.hasGoldPlate);
         return {
           ...p,
-          hasTwoPhotos: hasTwo
+          hasTwoPhotos: hasTwo,
+          hasGoldPlate: hasGold
         };
       });
 
@@ -281,10 +301,14 @@ export async function saveStoredProduct(prod) {
   const hasTwo = prod.hasTwoPhotos !== undefined
     ? Boolean(prod.hasTwoPhotos)
     : Boolean(parentCat?.hasTwoPhotos);
+  const hasGold = prod.hasGoldPlate !== undefined
+    ? Boolean(prod.hasGoldPlate)
+    : Boolean(parentCat?.hasGoldPlate);
 
   const cleanProd = {
     ...prod,
-    hasTwoPhotos: hasTwo
+    hasTwoPhotos: hasTwo,
+    hasGoldPlate: hasGold
   };
 
   // 1. Immediately update local cache

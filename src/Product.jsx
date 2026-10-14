@@ -165,6 +165,48 @@ export default function Product({
     }
   }
 
+  // Check if this product's category has the Gold Plate / Print option enabled
+  let hasGoldPlate = isEnabled(selectedProduct?.hasGoldPlate);
+  if (!hasGoldPlate && selectedCategory) {
+    hasGoldPlate = isEnabled(selectedCategory.hasGoldPlate);
+  }
+  if (!hasGoldPlate) {
+    const catsToSearch = categoriesList.length > 0 ? categoriesList : getStoredCategories();
+    const matchedCategory = catsToSearch.find(c => {
+      if (!c) return false;
+      if (selectedProduct?.categoryId && (c.id === selectedProduct.categoryId || String(c.id) === String(selectedProduct.categoryId))) {
+        return true;
+      }
+      const pCat = selectedProduct?.category || selectedProduct?.categoryTitle;
+      if (pCat && c.title && c.title.trim().toLowerCase() === pCat.trim().toLowerCase()) {
+        return true;
+      }
+      if (selectedProduct?.categorySlug && c.slug && c.slug.toLowerCase() === selectedProduct.categorySlug.toLowerCase()) {
+        return true;
+      }
+      if (selectedCategory?.id && (c.id === selectedCategory.id || String(c.id) === String(selectedCategory.id))) {
+        return true;
+      }
+      if (selectedCategory?.slug && c.slug && c.slug.toLowerCase() === selectedCategory.slug.toLowerCase()) {
+        return true;
+      }
+      if (c.title && selectedProduct?.title && selectedProduct.title.toLowerCase().includes(c.title.trim().toLowerCase())) {
+        return true;
+      }
+      return false;
+    });
+
+    if (matchedCategory) {
+      hasGoldPlate = isEnabled(matchedCategory.hasGoldPlate);
+    }
+  }
+
+  // State for Gold Plate / Print Option
+  const [customPlateText, setCustomPlateText] = useState('');
+  const [selectedTextOption, setSelectedTextOption] = useState('gold'); // 'gold' (Gold Plate) | 'print' (Print)
+  const goldPlateSurcharge = (hasGoldPlate && selectedTextOption === 'gold') ? 99 : 0;
+  const effectivePrice = (Number(currentPrice) || 499) + goldPlateSurcharge;
+
   // State for 2 Photos & Custom Texts
   const [photo1, setPhoto1] = useState(null);
   const [photo2, setPhoto2] = useState(null);
@@ -218,10 +260,11 @@ export default function Product({
 
   const buildCartItem = () => {
     return {
-      id: `${selectedProduct?.id || currentTitle}-${selectedModel}-${wording}-${Date.now()}`,
+      id: `${selectedProduct?.id || currentTitle}-${selectedModel}-${selectedTextOption}-${customPlateText}-${wording}-${Date.now()}`,
       title: currentTitle,
       image: currentImage,
-      price: currentPrice,
+      price: effectivePrice,
+      basePrice: currentPrice,
       oldPrice: currentOldPrice,
       model: selectedModel,
       wording: wording || null,
@@ -230,6 +273,11 @@ export default function Product({
       text1: text1?.trim() || null,
       text2: text2?.trim() || null,
       hasTwoPhotos,
+      hasGoldPlate,
+      goldOption: hasGoldPlate ? (selectedTextOption === 'gold' ? 'Gold Plate (+₹99)' : 'Print (Free)') : null,
+      customPlateText: hasGoldPlate ? (customPlateText?.trim() || null) : null,
+      customText: hasGoldPlate ? (customPlateText?.trim() || null) : null,
+      platePrice: goldPlateSurcharge,
       quantity: 1
     };
   };
@@ -285,8 +333,13 @@ export default function Product({
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-4 tracking-tight">{currentTitle}</h1>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl font-black text-zinc-900">₹{currentPrice}</span>
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <span className="text-2xl font-black text-zinc-900">₹{effectivePrice}</span>
+                  {goldPlateSurcharge > 0 && (
+                    <span className="text-[10px] sm:text-[11px] font-black text-amber-600 tracking-wider uppercase">
+                      INCL. +₹99 PLATE
+                    </span>
+                  )}
                   <span className="text-lg text-zinc-400 line-through">₹{currentOldPrice}</span>
                   <span className="text-sm font-bold text-green-500">{currentOff}</span>
                 </div>
@@ -355,6 +408,80 @@ export default function Product({
                   <option value="Vetri Vel Veer Vel">Vetri Vel Veer Vel</option>
                   <option value="ஓம் சரவணபவ">ஓம் சரவணபவ</option>
                 </select>
+              </div>
+            )}
+
+            {/* GOLD PLATE / PRINT OPTION (Only shown when category has hasGoldPlate enabled) */}
+            {hasGoldPlate && (
+              <div className="bg-zinc-50/80 rounded-2xl p-5 sm:p-6 mb-8 border border-zinc-200/90 shadow-sm space-y-5">
+                {/* 1. IF ANY TEXT NEED TYPE HERE (optional) */}
+                <div>
+                  <label className="block text-xs font-bold text-zinc-900 uppercase tracking-wider mb-2.5">
+                    IF ANY TEXT NEED TYPE HERE <span className="text-zinc-400 font-normal normal-case">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. gobi"
+                    value={customPlateText}
+                    onChange={(e) => setCustomPlateText(e.target.value)}
+                    className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-sm text-zinc-800 outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-sm transition-all"
+                  />
+                </div>
+
+                {/* 2. Text: Gold Plate / Print selector */}
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 mb-3">
+                    Text: Gold Plate / Print {selectedTextOption === 'gold' && <span className="text-amber-800 font-extrabold">(+₹99)</span>}
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {/* Option 1: Gold Plate (+₹99) */}
+                    <div
+                      onClick={() => setSelectedTextOption('gold')}
+                      className="flex flex-col items-center gap-1.5 cursor-pointer group select-none"
+                    >
+                      <div
+                        className={`w-14 h-14 rounded-xl p-1 flex items-center justify-center transition-all ${
+                          selectedTextOption === 'gold'
+                            ? 'border-2 border-zinc-950 shadow-md ring-2 ring-zinc-900/10'
+                            : 'border border-zinc-200 hover:border-zinc-400 bg-white'
+                        }`}
+                      >
+                        <div className="w-full h-full rounded-lg bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 border border-amber-400 flex items-center justify-center shadow-inner">
+                          <span className="font-serif font-black text-amber-950 text-xs italic tracking-wider drop-shadow-xs">
+                            Text
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`text-[11px] font-bold ${selectedTextOption === 'gold' ? 'text-zinc-950 font-black' : 'text-zinc-600'}`}>
+                        Gold Plate
+                      </span>
+                    </div>
+
+                    {/* Option 2: Print (Free) */}
+                    <div
+                      onClick={() => setSelectedTextOption('print')}
+                      className="flex flex-col items-center gap-1.5 cursor-pointer group select-none"
+                    >
+                      <div
+                        className={`w-14 h-14 rounded-xl p-1 flex items-center justify-center transition-all ${
+                          selectedTextOption === 'print'
+                            ? 'border-2 border-zinc-950 shadow-md ring-2 ring-zinc-900/10'
+                            : 'border border-zinc-200 hover:border-zinc-400 bg-white'
+                        }`}
+                      >
+                        <div className="w-full h-full rounded-lg bg-white border border-zinc-200 flex items-center justify-center shadow-inner">
+                          <span className="font-sans font-black text-orange-600 text-xs tracking-wider">
+                            Text
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`text-[11px] font-bold ${selectedTextOption === 'print' ? 'text-zinc-950 font-black' : 'text-zinc-600'}`}>
+                        Print
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

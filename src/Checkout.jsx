@@ -94,6 +94,9 @@ export default function Checkout({
       photo2: item.photo2 || null,
       text1: item.text1 || null,
       text2: item.text2 || null,
+      goldOption: item.goldOption || null,
+      customText: item.customText || item.customPlateText || null,
+      platePrice: item.platePrice || 0,
       image: (typeof item.image === 'string' && item.image.startsWith('data:') && item.image.length > 500)
         ? '/images/00e44de62ec83c768bb02d8f.jpg'
         : (item.image || '/images/00e44de62ec83c768bb02d8f.jpg')
@@ -194,6 +197,20 @@ export default function Checkout({
                       {item.text2 && (
                         <span className="text-[10px] bg-amber-50 text-amber-900 font-medium px-1.5 py-0.5 rounded border border-amber-200">
                           Text 2: {item.text2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {(item.goldOption || item.customText || item.customPlateText) && (
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {item.goldOption && (
+                        <span className="text-[10px] bg-zinc-900 text-white font-bold px-2 py-0.5 rounded">
+                          {item.goldOption}
+                        </span>
+                      )}
+                      {(item.customText || item.customPlateText) && (
+                        <span className="text-[10px] bg-amber-50 text-amber-950 font-bold px-2 py-0.5 rounded border border-amber-200">
+                          Text: {item.customText || item.customPlateText}
                         </span>
                       )}
                     </div>
@@ -627,6 +644,20 @@ export default function Checkout({
                           {item.text2 && (
                             <span className="text-[10px] text-zinc-600 truncate">
                               T2: <strong>{item.text2}</strong>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {(item.goldOption || item.customText || item.customPlateText) && (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {item.goldOption && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-900 text-white">
+                              {item.goldOption}
+                            </span>
+                          )}
+                          {(item.customText || item.customPlateText) && (
+                            <span className="text-[10px] text-amber-900 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-medium truncate">
+                              Text: <strong>{item.customText || item.customPlateText}</strong>
                             </span>
                           )}
                         </div>
