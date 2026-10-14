@@ -64,33 +64,41 @@ const getInitialApiBase = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE) {
     return import.meta.env.VITE_API_BASE;
   }
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return LOCAL_API_BASE;
+  }
   return RAILWAY_API_BASE;
 };
 
 export const PRIMARY_API_BASE = getInitialApiBase();
 export let API_BASE = PRIMARY_API_BASE;
 
-// Direct, resilient API caller with timeout protection
+// Direct, resilient API caller with timeout protection and bidirectional fallback
 export async function apiFetch(path, options = {}) {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const controller = new AbortController();
-  // 18s timeout to accommodate cold starts and image uploads
   const timeoutId = setTimeout(() => controller.abort(), 18000);
+  const fallbackBase = API_BASE === LOCAL_API_BASE ? RAILWAY_API_BASE : LOCAL_API_BASE;
+
   try {
     const res = await fetch(`${API_BASE}${cleanPath}`, {
       ...options,
       signal: options.signal || controller.signal
     });
     clearTimeout(timeoutId);
+    // If primary returned 4xx or 5xx, try fallbackBase
+    if (!res.ok && (res.status === 415 || res.status === 404 || res.status >= 500)) {
+      try {
+        const fbRes = await fetch(`${fallbackBase}${cleanPath}`, options);
+        if (fbRes.ok) return fbRes;
+      } catch (_) {}
+    }
     return res;
   } catch (err) {
     clearTimeout(timeoutId);
-    // If running on localhost and primary API_BASE was not LOCAL_API_BASE, fallback to local backend
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && API_BASE !== LOCAL_API_BASE) {
-      try {
-        return await fetch(`${LOCAL_API_BASE}${cleanPath}`, options);
-      } catch (_) {}
-    }
+    try {
+      return await fetch(`${fallbackBase}${cleanPath}`, options);
+    } catch (_) {}
     throw err;
   }
 }
@@ -295,7 +303,13 @@ export async function fetchStoriesFromApi() {
     if (!res.ok) throw new Error('Failed to fetch stories');
     const serverStories = await res.json();
     if (Array.isArray(serverStories)) {
-      const normalized = serverStories.map(s => {
+      const currentLocal = getStoredStories();
+      const unsynced = currentLocal.filter(s =>
+        String(s.id).startsWith('story-') &&
+        !serverStories.some(sv => sv.id === s.id || String(sv.id) === String(s.id))
+      );
+      const allStories = [...serverStories, ...unsynced];
+      const normalized = allStories.map(s => {
         let imgs = Array.isArray(s.images) && s.images.length > 0
           ? s.images
           : (s.img ? [s.img] : []);
@@ -420,8 +434,16 @@ export async function fetchReviewsFromApi() {
     if (!res.ok) throw new Error('Failed to fetch reviews');
     const serverReviews = await res.json();
     if (Array.isArray(serverReviews)) {
-      localStorage.setItem('custom_reviews', JSON.stringify(serverReviews));
-      return serverReviews;
+      const currentLocal = getStoredReviews();
+      const unsynced = currentLocal.filter(r =>
+        String(r.id).startsWith('rev-') &&
+        !serverReviews.some(s => s.id === r.id || String(s.id) === String(r.id))
+      );
+      const merged = [...serverReviews, ...unsynced];
+      try {
+        localStorage.setItem('custom_reviews', JSON.stringify(merged));
+      } catch (_) {}
+      return merged;
     }
   } catch (e) {
     console.warn('Backend reviews API unavailable, using cached reviews:', e.message);
@@ -633,5 +655,43 @@ export async function updateStoredOrderStatus(orderId, isPaid) {
     console.error('Failed to update order status:', e);
     throw e;
   }
+}
+
+// Client-side image compression to prevent reverse proxy 413s and localStorage quota overflows
+export function compressImage(file, maxWidth = 1200, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    if (typeof file === 'string') return resolve(file);
+    if (!file.type || !file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 

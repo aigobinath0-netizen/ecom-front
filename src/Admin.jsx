@@ -48,6 +48,7 @@ import {
   updateStoredOrderStatus,
   fetchOrdersFromApi,
   normalizeCategorySection,
+  compressImage,
   apiFetch,
   API_BASE
 } from './categoryData';
@@ -354,16 +355,19 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   };
 
   // STORY HANDLERS
-  const handleMultipleStoryImages = (e) => {
+  const handleMultipleStoryImages = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setStoryImages(prev => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of files) {
+      try {
+        const compressed = await compressImage(file, 1080, 0.75);
+        if (compressed) {
+          setStoryImages(prev => [...prev, compressed]);
+        }
+      } catch (err) {
+        console.error('Failed to compress story image:', err);
+      }
+    }
   };
 
   const handleRemoveStoryImage = (indexToRemove) => {
@@ -419,19 +423,22 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     });
   };
 
-  const handleEditStoryImagesAdd = (e) => {
+  const handleEditStoryImagesAdd = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditingStory(prev => ({
-          ...prev,
-          images: [...prev.images, reader.result]
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of files) {
+      try {
+        const compressed = await compressImage(file, 1080, 0.75);
+        if (compressed) {
+          setEditingStory(prev => ({
+            ...prev,
+            images: [...prev.images, compressed]
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to compress story image:', err);
+      }
+    }
   };
 
   const handleSaveEditStory = async (e) => {
@@ -455,14 +462,17 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   };
 
   // REVIEW HANDLERS
-  const handleReviewImageChange = (e) => {
+  const handleReviewImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setReviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 900, 0.75);
+        if (compressed) {
+          setReviewImage(compressed);
+        }
+      } catch (err) {
+        console.error('Failed to compress review image:', err);
+      }
     }
   };
 

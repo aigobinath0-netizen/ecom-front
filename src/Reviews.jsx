@@ -21,6 +21,9 @@ export default function Reviews() {
   const [isPaused, setIsPaused] = useState(false);
   const progressTimerRef = useRef(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const [newReview, setNewReview] = useState({
     author: '',
     title: '',
@@ -155,10 +158,22 @@ export default function Reviews() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newReview.author || !newReview.title || !newReview.text) return;
+    const author = (newReview.author || '').trim();
+    const text = (newReview.text || '').trim();
+    const title = (newReview.title || '').trim() || 'Verified Customer Review';
+
+    if (!author || !text) {
+      alert('Please enter your name and review text');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const reviewToSave = {
-        ...newReview,
+        author,
+        title,
+        text,
+        rating: Number(newReview.rating) || 5,
         verified: true,
         createdAt: new Date().toISOString()
       };
@@ -166,13 +181,16 @@ export default function Reviews() {
       setReviews(getStoredReviews());
       setIsModalOpen(false);
       setNewReview({ author: '', title: '', text: '', rating: 5 });
-      // Re-fetch to ensure sync with backend
+      setSubmitSuccess(true);
+      setTimeout(() => setSubmitSuccess(false), 5000);
       await fetchReviews();
     } catch (error) {
       console.error("Failed to submit review:", error);
       setIsModalOpen(false);
       setNewReview({ author: '', title: '', text: '', rating: 5 });
       setReviews(getStoredReviews());
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -247,11 +265,19 @@ export default function Reviews() {
       )}
 
 
+      {/* Submission Success Toast */}
+      {submitSuccess && (
+        <div className="max-w-md mx-auto mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <span className="text-sm font-bold">Thank you! Your review has been published successfully.</span>
+        </div>
+      )}
+
       {/* Write a Review Button */}
       <div className="flex justify-center mb-10">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-bold transition-colors">
+          className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-bold transition-colors shadow-sm">
           <Star className="w-4 h-4 fill-white" />
           Write a Review
         </button>
@@ -317,64 +343,72 @@ export default function Reviews() {
 
       {/* Review Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 relative shadow-2xl border border-zinc-100">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900"
+              className="absolute top-5 right-5 text-zinc-400 hover:text-zinc-900 p-1 rounded-full hover:bg-zinc-100 transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
-            <h2 className="text-2xl font-black text-zinc-900 mb-6">Write a Review</h2>
+            <h2 className="text-2xl font-black text-zinc-900 mb-1">Write a Review</h2>
+            <p className="text-xs text-zinc-500 mb-6">Share your thoughts on our products and designs</p>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1">Name</label>
+                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Your Name</label>
                 <input
                   required
                   type="text"
-                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                  placeholder="e.g. Arun Kumar"
+                  className="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                   value={newReview.author}
                   onChange={e => setNewReview({ ...newReview, author: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1">Rating</label>
+                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Rating</label>
                 <select
-                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                  className="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black bg-white transition-all font-medium"
                   value={newReview.rating}
                   onChange={e => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
                 >
-                  <option value={5}>5 Stars</option>
-                  <option value={4}>4 Stars</option>
-                  <option value={3}>3 Stars</option>
-                  <option value={2}>2 Stars</option>
-                  <option value={1}>1 Star</option>
+                  <option value={5}>⭐⭐⭐⭐⭐ (5 Stars - Excellent)</option>
+                  <option value={4}>⭐⭐⭐⭐ (4 Stars - Good)</option>
+                  <option value={3}>⭐⭐⭐ (3 Stars - Average)</option>
+                  <option value={2}>⭐⭐ (2 Stars - Poor)</option>
+                  <option value={1}>⭐ (1 Star - Terrible)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1">Title</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider">Headline / Title</label>
+                  <span className="text-[11px] text-zinc-400 font-medium">Optional</span>
+                </div>
                 <input
                   type="text"
-                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                  placeholder="e.g. Awesome quality & finish!"
+                  className="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                   value={newReview.title}
                   onChange={e => setNewReview({ ...newReview, title: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1">Review</label>
+                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Review</label>
                 <textarea
                   required
                   rows={4}
-                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                  placeholder="Describe the product fit, quality, and your overall experience..."
+                  className="w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                   value={newReview.text}
                   onChange={e => setNewReview({ ...newReview, text: e.target.value })}
                 />
               </div>
               <button
                 type="submit"
-                className="mt-2 bg-zinc-950 text-white font-bold py-3 rounded-xl hover:bg-zinc-800 transition-colors"
+                disabled={isSubmitting}
+                className="mt-2 bg-zinc-950 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 disabled:opacity-50 transition-colors shadow-md"
               >
-                Submit Review
+                {isSubmitting ? 'Publishing Review...' : 'Submit Review'}
               </button>
             </form>
           </div>
