@@ -8,9 +8,11 @@ import {
   fetchProductsFromApi,
   normalizeCategorySection
 } from './categoryData';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, Plus, Check, X, CheckCircle2 } from 'lucide-react';
 
 export default function CategoriesPage({
+  cart = [],
+  onAddToCart,
   selectedCategory,
   onSelectCategory,
   onSelectProduct,
@@ -25,6 +27,67 @@ export default function CategoriesPage({
   const [activeSectionId, setActiveSectionId] = useState('phone_cover');
   const [selectedCat, setSelectedCat] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [cartDrawerItem, setCartDrawerItem] = useState(null);
+
+  const isProductInCart = (prod) => {
+    if (!prod) return false;
+    const currentCart = Array.isArray(cart) && cart.length > 0
+      ? cart
+      : (() => {
+          try {
+            return JSON.parse(localStorage.getItem('pravar_cart') || '[]');
+          } catch (e) {
+            return [];
+          }
+        })();
+
+    return currentCart.some(item => {
+      if (item.productId && prod.id && String(item.productId) === String(prod.id)) return true;
+      if (item.id && prod.id && (String(item.id) === String(prod.id) || String(item.id).startsWith(String(prod.id)))) return true;
+      if (item.title && prod.title) {
+        const itemT = item.title.trim().toLowerCase();
+        const prodT = prod.title.trim().toLowerCase();
+        if (itemT === prodT || itemT.startsWith(prodT)) return true;
+      }
+      return false;
+    });
+  };
+
+  const handleQuickAddToCart = (e, prod) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    const isTwo = Boolean(selectedCat?.hasTwoPhotos) || Boolean(prod.hasTwoPhotos);
+    const mult = isTwo ? 2 : 1;
+    const pPrice = (Number(prod.price) || 499) * mult;
+    const pOldPrice = (Number(prod.oldPrice) || 999) * mult;
+
+    const newItem = {
+      id: `${prod.id || prod.title}-${Date.now()}`,
+      productId: prod.id,
+      title: isTwo ? `${prod.title} (Set of 2 Covers)` : prod.title,
+      image: prod.image,
+      price: pPrice,
+      basePrice: pPrice,
+      oldPrice: pOldPrice,
+      model: selectedCat?.title || 'Universal Phone Model',
+      hasTwoPhotos: isTwo,
+      quantity: 1
+    };
+
+    if (onAddToCart) {
+      onAddToCart(newItem);
+    } else {
+      try {
+        const existing = JSON.parse(localStorage.getItem('pravar_cart') || '[]');
+        const updated = [newItem, ...existing];
+        localStorage.setItem('pravar_cart', JSON.stringify(updated));
+      } catch (err) {
+        console.error('Error adding to cart:', err);
+      }
+    }
+
+    setCartDrawerItem(newItem);
+  };
 
   useEffect(() => {
     // 1. Initial cached data
@@ -233,8 +296,8 @@ export default function CategoriesPage({
                   }}
                   className="group flex flex-col bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 hover:border-zinc-400 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                 >
-                  {/* Image Container with Top-Left Black SALE Badge */}
-                  <div className="relative bg-[#f4f4f5] aspect-[4/5] flex items-center justify-center p-2.5 sm:p-5 overflow-hidden">
+                  {/* Image Container with Top-Left Black SALE Badge & Quick Add Button */}
+                  <div className="relative bg-[#f4f4f5] aspect-[4/5] flex items-center justify-center p-2.5 sm:p-5 overflow-hidden group/img">
                     <span className="absolute top-2.5 left-2.5 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 rounded-xs shadow-xs z-10">
                       {prod.badge || 'SALE'}
                     </span>
@@ -243,6 +306,38 @@ export default function CategoriesPage({
                       alt={prod.title}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
                     />
+
+                    {/* Quick Add To Cart / In Cart Indicator (Matching Reference Screenshots) */}
+                    {isProductInCart(prod) ? (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (setCurrentPage) setCurrentPage('cart');
+                          else navigate('/cart');
+                        }}
+                        className="absolute bottom-2.5 right-2.5 z-20 flex items-center gap-1.5"
+                      >
+                        <span className="hidden sm:inline-flex items-center bg-black/85 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md animate-in fade-in select-none">
+                          In cart · View cart
+                        </span>
+                        <button
+                          type="button"
+                          title="In cart - Click to view cart"
+                          className="w-8 h-8 rounded-full bg-[#16a34a] hover:bg-[#15803d] text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer ring-2 ring-white"
+                        >
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        title="Add to Cart"
+                        onClick={(e) => handleQuickAddToCart(e, prod)}
+                        className="absolute bottom-2.5 right-2.5 z-20 w-8 h-8 rounded-full bg-black hover:bg-zinc-800 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 cursor-pointer ring-2 ring-white"
+                      >
+                        <Plus className="w-4 h-4 stroke-[3]" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Product Info Directly Below Image */}
@@ -370,6 +465,95 @@ export default function CategoriesPage({
               </div>
             )}
           </main>
+        </div>
+      )}
+
+      {/* "ADDED TO CART" DRAWER (Matching Reference Screenshot 2) */}
+      {cartDrawerItem && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200"
+            onClick={() => setCartDrawerItem(null)}
+          />
+
+          {/* Drawer Sidebar */}
+          <div className="relative w-full max-w-sm sm:max-w-md bg-white h-full shadow-2xl z-50 flex flex-col justify-between animate-in slide-in-from-right duration-300">
+            {/* Drawer Header */}
+            <div>
+              <div className="p-4 sm:p-5 border-b border-zinc-200 flex items-center justify-between">
+                <span className="text-xs sm:text-sm font-black tracking-widest text-zinc-900 uppercase">
+                  ADDED TO CART
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCartDrawerItem(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-black hover:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Product Info Row */}
+              <div className="p-5 flex gap-4 items-start border-b border-zinc-100">
+                <div className="w-20 aspect-[3/4] bg-[#f4f4f5] rounded-xl p-2 flex items-center justify-center shrink-0 border border-zinc-200">
+                  <img
+                    src={cartDrawerItem.image}
+                    alt={cartDrawerItem.title}
+                    className="w-full h-full object-contain mix-blend-multiply"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs sm:text-sm font-bold text-zinc-900 leading-snug line-clamp-2">
+                    {cartDrawerItem.title}
+                  </h4>
+                  <div className="flex items-center gap-2 mt-1.5 text-xs sm:text-sm">
+                    <span className="font-extrabold text-zinc-950">₹{cartDrawerItem.price}</span>
+                    {cartDrawerItem.oldPrice && (
+                      <span className="text-zinc-400 line-through text-[11px]">
+                        ₹{cartDrawerItem.oldPrice}
+                      </span>
+                    )}
+                    {cartDrawerItem.oldPrice && (
+                      <span className="text-emerald-600 font-bold text-[11px]">
+                        {Math.round(((cartDrawerItem.oldPrice - cartDrawerItem.price) / cartDrawerItem.oldPrice) * 100)}% off
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Added to cart status */}
+                  <div className="flex items-center gap-1.5 mt-3 text-emerald-600 text-xs font-bold">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Added to cart</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Drawer Footer Actions */}
+            <div className="p-5 border-t border-zinc-200 bg-zinc-50/70 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCartDrawerItem(null)}
+                  className="text-xs sm:text-sm font-semibold text-zinc-600 hover:text-black underline cursor-pointer"
+                >
+                  Continue shopping
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCartDrawerItem(null);
+                    if (setCurrentPage) setCurrentPage('cart');
+                    else navigate('/cart');
+                  }}
+                  className="bg-black hover:bg-zinc-800 text-white font-bold px-6 py-3 rounded-full text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer shadow-md transition-colors"
+                >
+                  Go to cart &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -236,6 +236,8 @@ function App() {
           <Route path="/track" element={<TrackOrder />} />
           <Route path="/categories" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -244,6 +246,8 @@ function App() {
           } />
           <Route path="/categories/:slug" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -252,6 +256,8 @@ function App() {
           } />
           <Route path="/category" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -260,6 +266,8 @@ function App() {
           } />
           <Route path="/category/:slug" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -268,6 +276,8 @@ function App() {
           } />
           <Route path="/collections/:slug" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -276,6 +286,8 @@ function App() {
           } />
           <Route path="/collection/:slug" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -284,6 +296,8 @@ function App() {
           } />
           <Route path="/collection" element={
             <CategoriesPage
+              cart={cart}
+              onAddToCart={addToCart}
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}

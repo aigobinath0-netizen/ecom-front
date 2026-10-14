@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Sparkles, Plus, Check } from 'lucide-react';
 import {
   getStoredCategories,
   getStoredProducts,
@@ -8,6 +8,8 @@ import {
 } from './categoryData';
 
 export default function Collection({
+  cart = [],
+  onAddToCart,
   selectedCategory,
   setSelectedCategory,
   setCurrentPage,
@@ -16,6 +18,68 @@ export default function Collection({
   const [categories, setCategories] = useState([]);
   const [currentCat, setCurrentCat] = useState(null);
   const [products, setProducts] = useState([]);
+
+  const isProductInCart = (prod) => {
+    if (!prod) return false;
+    const currentCart = Array.isArray(cart) && cart.length > 0
+      ? cart
+      : (() => {
+          try {
+            return JSON.parse(localStorage.getItem('pravar_cart') || '[]');
+          } catch (e) {
+            return [];
+          }
+        })();
+
+    return currentCart.some(item => {
+      if (item.productId && prod.id && String(item.productId) === String(prod.id)) return true;
+      if (item.id && prod.id && (String(item.id) === String(prod.id) || String(item.id).startsWith(String(prod.id)))) return true;
+      if (item.title && prod.title) {
+        const itemT = item.title.trim().toLowerCase();
+        const prodT = prod.title.trim().toLowerCase();
+        if (itemT === prodT || itemT.startsWith(prodT)) return true;
+      }
+      return false;
+    });
+  };
+
+  const handleQuickAddToCart = (e, prod) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    const isTwo = Boolean(currentCat?.hasTwoPhotos) || Boolean(prod.hasTwoPhotos);
+    const mult = isTwo ? 2 : 1;
+    const pPrice = (Number(prod.price) || 499) * mult;
+    const pOldPrice = (Number(prod.oldPrice) || 999) * mult;
+
+    const newItem = {
+      id: `${prod.id || prod.title}-${Date.now()}`,
+      productId: prod.id,
+      title: isTwo ? `${prod.title} (Set of 2 Covers)` : prod.title,
+      image: prod.image,
+      price: pPrice,
+      basePrice: pPrice,
+      oldPrice: pOldPrice,
+      model: currentCat?.title || 'Universal Phone Model',
+      hasTwoPhotos: isTwo,
+      quantity: 1
+    };
+
+    if (onAddToCart) {
+      onAddToCart(newItem);
+    } else {
+      try {
+        const existing = JSON.parse(localStorage.getItem('pravar_cart') || '[]');
+        const updated = [newItem, ...existing];
+        localStorage.setItem('pravar_cart', JSON.stringify(updated));
+      } catch (err) {
+        console.error('Error adding to cart:', err);
+      }
+    }
+
+    if (setCurrentPage) {
+      setCurrentPage('cart');
+    }
+  };
 
   useEffect(() => {
     // 1. Initial cached state
@@ -228,7 +292,7 @@ export default function Collection({
                 className="group flex flex-col cursor-pointer"
               >
                 {/* Product Image Box Matching Screenshot 2 */}
-                <div className="relative bg-[#f4f4f5] aspect-[4/5] p-4 flex items-center justify-center overflow-hidden rounded-lg">
+                <div className="relative bg-[#f4f4f5] aspect-[4/5] p-4 flex items-center justify-center overflow-hidden rounded-lg group/img">
                   {/* Badge: Green NEW or Gold BEST SELLER */}
                   <div className="absolute top-2.5 left-2.5 z-10">
                     {idx % 2 === 0 ? (
@@ -247,6 +311,37 @@ export default function Collection({
                     src={prod.image}
                     className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
                   />
+
+                  {/* Quick Add To Cart / In Cart Indicator */}
+                  {isProductInCart(prod) ? (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (setCurrentPage) setCurrentPage('cart');
+                      }}
+                      className="absolute bottom-2.5 right-2.5 z-20 flex items-center gap-1.5"
+                    >
+                      <span className="hidden sm:inline-flex items-center bg-black/85 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md animate-in fade-in select-none">
+                        In cart · View cart
+                      </span>
+                      <button
+                        type="button"
+                        title="In cart - Click to view cart"
+                        className="w-8 h-8 rounded-full bg-[#16a34a] hover:bg-[#15803d] text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer ring-2 ring-white"
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      title="Add to Cart"
+                      onClick={(e) => handleQuickAddToCart(e, prod)}
+                      className="absolute bottom-2.5 right-2.5 z-20 w-8 h-8 rounded-full bg-black hover:bg-zinc-800 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 cursor-pointer ring-2 ring-white"
+                    >
+                      <Plus className="w-4 h-4 stroke-[3]" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Details Section */}
