@@ -160,6 +160,34 @@ export default function Cart({
                           MURUGAN WORDINGS: {item.wording}
                         </p>
                       )}
+
+                      {/* 2 Photos & Custom Texts Display */}
+                      {(item.photo1 || item.photo2 || item.text1 || item.text2) && (
+                        <div className="mt-2.5 pt-2 border-t border-zinc-100 flex flex-wrap items-center gap-2">
+                          {item.photo1 && (
+                            <div className="flex items-center gap-1.5 bg-zinc-100/90 border border-zinc-200 rounded-lg p-1 pr-2">
+                              <img src={item.photo1} alt="Photo 1" className="w-8 h-8 rounded-md object-cover border border-zinc-200" />
+                              <span className="text-[10px] font-bold text-zinc-700">Photo 1</span>
+                            </div>
+                          )}
+                          {item.photo2 && (
+                            <div className="flex items-center gap-1.5 bg-zinc-100/90 border border-zinc-200 rounded-lg p-1 pr-2">
+                              <img src={item.photo2} alt="Photo 2" className="w-8 h-8 rounded-md object-cover border border-zinc-200" />
+                              <span className="text-[10px] font-bold text-zinc-700">Photo 2</span>
+                            </div>
+                          )}
+                          {item.text1 && (
+                            <span className="text-[11px] bg-zinc-100 border border-zinc-200 text-zinc-700 px-2 py-0.5 rounded font-medium">
+                              Text 1: <strong className="text-zinc-950 font-bold">{item.text1}</strong>
+                            </span>
+                          )}
+                          {item.text2 && (
+                            <span className="text-[11px] bg-zinc-100 border border-zinc-200 text-zinc-700 px-2 py-0.5 rounded font-medium">
+                              Text 2: <strong className="text-zinc-950 font-bold">{item.text2}</strong>
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Quantity & Price Controls */}

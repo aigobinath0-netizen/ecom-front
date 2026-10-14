@@ -90,6 +90,10 @@ export default function Checkout({
       wording: item.wording || '',
       price: item.price || 499,
       quantity: item.quantity || 1,
+      photo1: item.photo1 || null,
+      photo2: item.photo2 || null,
+      text1: item.text1 || null,
+      text2: item.text2 || null,
       image: (typeof item.image === 'string' && item.image.startsWith('data:') && item.image.length > 500)
         ? '/images/00e44de62ec83c768bb02d8f.jpg'
         : (item.image || '/images/00e44de62ec83c768bb02d8f.jpg')
@@ -170,6 +174,30 @@ export default function Checkout({
                   <h4 className="text-xs font-bold text-zinc-900 truncate">{item.title}</h4>
                   <p className="text-[11px] text-zinc-500">{item.model}</p>
                   {item.wording && <p className="text-[10px] text-emerald-600 font-bold">{item.wording}</p>}
+                  {(item.photo1 || item.photo2 || item.text1 || item.text2) && (
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {item.photo1 && (
+                        <span className="text-[10px] bg-zinc-100 text-zinc-700 font-bold px-1.5 py-0.5 rounded border border-zinc-200">
+                          📷 Photo 1
+                        </span>
+                      )}
+                      {item.photo2 && (
+                        <span className="text-[10px] bg-zinc-100 text-zinc-700 font-bold px-1.5 py-0.5 rounded border border-zinc-200">
+                          📷 Photo 2
+                        </span>
+                      )}
+                      {item.text1 && (
+                        <span className="text-[10px] bg-amber-50 text-amber-900 font-medium px-1.5 py-0.5 rounded border border-amber-200">
+                          Text 1: {item.text1}
+                        </span>
+                      )}
+                      {item.text2 && (
+                        <span className="text-[10px] bg-amber-50 text-amber-900 font-medium px-1.5 py-0.5 rounded border border-amber-200">
+                          Text 2: {item.text2}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="text-xs font-bold text-zinc-900">
                   Qty: {item.quantity} • ₹{item.price * item.quantity}
@@ -578,6 +606,30 @@ export default function Checkout({
                         <p className="text-[11px] text-emerald-600 font-bold truncate mt-0.5">
                           MURUGAN WORDINGS: {item.wording}
                         </p>
+                      )}
+                      {(item.photo1 || item.photo2 || item.text1 || item.text2) && (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {item.photo1 && (
+                            <span className="text-[10px] bg-zinc-200/80 text-zinc-800 font-bold px-1.5 py-0.5 rounded">
+                              📷 Photo 1
+                            </span>
+                          )}
+                          {item.photo2 && (
+                            <span className="text-[10px] bg-zinc-200/80 text-zinc-800 font-bold px-1.5 py-0.5 rounded">
+                              📷 Photo 2
+                            </span>
+                          )}
+                          {item.text1 && (
+                            <span className="text-[10px] text-zinc-600 truncate">
+                              T1: <strong>{item.text1}</strong>
+                            </span>
+                          )}
+                          {item.text2 && (
+                            <span className="text-[10px] text-zinc-600 truncate">
+                              T2: <strong>{item.text2}</strong>
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
 

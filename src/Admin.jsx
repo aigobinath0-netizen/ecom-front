@@ -78,7 +78,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
     bannerImage: null,
     bannerType: 'split',
     bannerHeadline: 'Make Your Smartphone Case Stand Out From The Crowd',
-    startingPrice: 499
+    startingPrice: 499,
+    hasTwoPhotos: false
   });
   const [editingCategory, setEditingCategory] = useState(null);
   const [categorySectionFilter, setCategorySectionFilter] = useState('all');
@@ -249,7 +250,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       bannerImage: newCategory.bannerImage || null,
       bannerType: newCategory.bannerType || 'split',
       bannerHeadline: newCategory.bannerHeadline?.trim() || 'Make Your Smartphone Case Stand Out From The Crowd',
-      startingPrice: Number(newCategory.startingPrice) || 499
+      startingPrice: Number(newCategory.startingPrice) || 499,
+      hasTwoPhotos: Boolean(newCategory.hasTwoPhotos)
     };
 
     await saveStoredCategory(categoryObj);
@@ -261,7 +263,8 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       bannerImage: null, 
       bannerType: 'split',
       bannerHeadline: 'Make Your Smartphone Case Stand Out From The Crowd', 
-      startingPrice: 499 
+      startingPrice: 499,
+      hasTwoPhotos: false
     });
     setActiveSubTab('manage-categories');
     alert(`Category "${categoryObj.title}" created successfully under section "${categoryObj.section}"!`);
@@ -276,7 +279,11 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
   const handleSaveEditCategory = async (e) => {
     e.preventDefault();
     if (!editingCategory.title.trim()) return;
-    await saveStoredCategory(editingCategory);
+    const toSave = {
+      ...editingCategory,
+      hasTwoPhotos: Boolean(editingCategory.hasTwoPhotos)
+    };
+    await saveStoredCategory(toSave);
     await refreshCategoriesAndProducts();
     setEditingCategory(null);
     alert('Category updated successfully!');
@@ -963,6 +970,34 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                   )}
                 </div>
 
+                {/* 2 Photos & Custom Text Upload Option (Magic Case / Dual Photo) */}
+                <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/90 shadow-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                          Require 2 Photos + Custom Text Upload?
+                        </label>
+                        <span className="text-[10px] font-black text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          Magic Case / Dual Photo
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed">
+                        When enabled, products in this category will ask customers to upload Photo 1 & Photo 2 and enter custom Text 1 & Text 2. Only this category alone will have this option.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(newCategory.hasTwoPhotos)}
+                        onChange={(e) => setNewCategory({ ...newCategory, hasTwoPhotos: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-12 h-6.5 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500 shadow-inner"></div>
+                    </label>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   className="bg-zinc-950 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-zinc-800 transition-colors shadow-md text-sm flex items-center gap-2 cursor-pointer"
@@ -1039,6 +1074,11 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                 <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">
                                   {prodCount} Products
                                 </span>
+                                {cat.hasTwoPhotos && (
+                                  <span className="text-[10px] font-black text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                    📸 2 Photos Mode
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1846,6 +1886,34 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                 )}
               </div>
 
+              {/* 2 Photos & Custom Text Upload Option (Magic Case / Dual Photo) */}
+              <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/90 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                        Require 2 Photos + Custom Text Upload?
+                      </label>
+                      <span className="text-[10px] font-black text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Magic Case / Dual Photo
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed">
+                      When enabled, products in this category will ask customers to upload Photo 1 & Photo 2 and enter custom Text 1 & Text 2. Only this category alone will have this option.
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editingCategory.hasTwoPhotos)}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, hasTwoPhotos: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-12 h-6.5 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500 shadow-inner"></div>
+                  </label>
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
@@ -2619,6 +2687,44 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
                                       View Uploaded Photo &rarr;
                                     </a>
                                   </div>
+                                )}
+                                {item?.photo1 && (
+                                  <div className="col-span-1 sm:col-span-2 flex items-center gap-2 mt-1">
+                                    <span className="font-bold text-zinc-700">Photo 1:</span>
+                                    <a
+                                      href={item.photo1}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded"
+                                    >
+                                      📷 View Photo 1 &rarr;
+                                    </a>
+                                  </div>
+                                )}
+                                {item?.photo2 && (
+                                  <div className="col-span-1 sm:col-span-2 flex items-center gap-2 mt-1">
+                                    <span className="font-bold text-zinc-700">Photo 2:</span>
+                                    <a
+                                      href={item.photo2}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded"
+                                    >
+                                      📷 View Photo 2 &rarr;
+                                    </a>
+                                  </div>
+                                )}
+                                {item?.text1 && (
+                                  <p className="col-span-1 sm:col-span-2">
+                                    <span className="font-bold text-zinc-700">Text 1:</span>{' '}
+                                    <span className="bg-amber-100 text-[#ea580c] px-2 py-0.5 rounded font-bold">{item.text1}</span>
+                                  </p>
+                                )}
+                                {item?.text2 && (
+                                  <p className="col-span-1 sm:col-span-2">
+                                    <span className="font-bold text-zinc-700">Text 2:</span>{' '}
+                                    <span className="bg-amber-100 text-[#ea580c] px-2 py-0.5 rounded font-bold">{item.text2}</span>
+                                  </p>
                                 )}
                               </div>
                             </div>

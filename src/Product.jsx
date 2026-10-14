@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Share2, ChevronLeft, Check, ChevronDown, Search } from 'lucide-react';
+import { Share2, ChevronLeft, Check, ChevronDown, Search, Upload, Image as ImageIcon, X } from 'lucide-react';
 import { PHONE_MODELS_BY_BRAND } from './phoneModelsData';
+import { getStoredCategories, compressImage } from './categoryData';
 
 const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -89,6 +90,7 @@ const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
 
 export default function Product({
   selectedProduct,
+  selectedCategory,
   setCurrentPage,
   onAddToCart,
   onBuyNow
@@ -104,15 +106,74 @@ export default function Product({
   const [wording, setWording] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(null);
 
+  // Check if this product's category has the 2 Photos & Custom Text option enabled
+  const allCategories = getStoredCategories();
+  const productCategory = allCategories.find(c => 
+    c.id === selectedProduct?.categoryId || 
+    String(c.id) === String(selectedProduct?.categoryId) ||
+    (selectedProduct?.category && c.title?.toLowerCase() === selectedProduct?.category?.toLowerCase()) ||
+    (selectedProduct?.categorySlug && c.slug === selectedProduct?.categorySlug) ||
+    (selectedCategory && (c.id === selectedCategory.id || String(c.id) === String(selectedCategory.id)))
+  );
+  const hasTwoPhotos = Boolean(
+    productCategory?.hasTwoPhotos || 
+    selectedProduct?.hasTwoPhotos || 
+    selectedCategory?.hasTwoPhotos
+  );
+
+  // State for 2 Photos & Custom Texts
+  const [photo1, setPhoto1] = useState(null);
+  const [photo2, setPhoto2] = useState(null);
+  const [text1, setText1] = useState('');
+  const [text2, setText2] = useState('');
+  const [isUploadingPhoto1, setIsUploadingPhoto1] = useState(false);
+  const [isUploadingPhoto2, setIsUploadingPhoto2] = useState(false);
+
+  const handlePhotoUpload = async (e, photoNum) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (photoNum === 1) setIsUploadingPhoto1(true);
+    else setIsUploadingPhoto2(true);
+
+    try {
+      const compressed = await compressImage(file, 1200, 0.85);
+      if (photoNum === 1) setPhoto1(compressed);
+      else setPhoto2(compressed);
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+      setFeedbackMsg({ type: 'error', text: 'Failed to process image. Please try again.' });
+      setTimeout(() => setFeedbackMsg(null), 3000);
+    } finally {
+      if (photoNum === 1) setIsUploadingPhoto1(false);
+      else setIsUploadingPhoto2(false);
+    }
+  };
+
   const isMuruganProduct = currentTitle.toLowerCase().includes('murug');
 
-  const handleAddToCart = () => {
+  const validateOptions = () => {
     if (!selectedModel) {
       setFeedbackMsg({ type: 'error', text: '⚠️ Please choose your phone model first!' });
       setTimeout(() => setFeedbackMsg(null), 3000);
-      return;
+      return false;
     }
-    const item = {
+    if (hasTwoPhotos) {
+      if (!photo1) {
+        setFeedbackMsg({ type: 'error', text: '⚠️ Please upload Photo 1 to proceed!' });
+        setTimeout(() => setFeedbackMsg(null), 3500);
+        return false;
+      }
+      if (!photo2) {
+        setFeedbackMsg({ type: 'error', text: '⚠️ Please upload Photo 2 to proceed!' });
+        setTimeout(() => setFeedbackMsg(null), 3500);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const buildCartItem = () => {
+    return {
       id: `${selectedProduct?.id || currentTitle}-${selectedModel}-${wording}-${Date.now()}`,
       title: currentTitle,
       image: currentImage,
@@ -120,29 +181,26 @@ export default function Product({
       oldPrice: currentOldPrice,
       model: selectedModel,
       wording: wording || null,
+      photo1: photo1 || null,
+      photo2: photo2 || null,
+      text1: text1?.trim() || null,
+      text2: text2?.trim() || null,
+      hasTwoPhotos,
       quantity: 1
     };
+  };
+
+  const handleAddToCart = () => {
+    if (!validateOptions()) return;
+    const item = buildCartItem();
     if (onAddToCart) {
       onAddToCart(item);
     }
   };
 
   const handleBuyNow = () => {
-    if (!selectedModel) {
-      setFeedbackMsg({ type: 'error', text: '⚠️ Please choose your phone model first!' });
-      setTimeout(() => setFeedbackMsg(null), 3000);
-      return;
-    }
-    const item = {
-      id: `${selectedProduct?.id || currentTitle}-${selectedModel}-${wording}-${Date.now()}`,
-      title: currentTitle,
-      image: currentImage,
-      price: currentPrice,
-      oldPrice: currentOldPrice,
-      model: selectedModel,
-      wording: wording || null,
-      quantity: 1
-    };
+    if (!validateOptions()) return;
+    const item = buildCartItem();
     if (onBuyNow) {
       onBuyNow(item);
     }
@@ -253,6 +311,153 @@ export default function Product({
                   <option value="Vetri Vel Veer Vel">Vetri Vel Veer Vel</option>
                   <option value="ஓம் சரவணபவ">ஓம் சரவணபவ</option>
                 </select>
+              </div>
+            )}
+
+            {/* 2 PHOTOS & CUSTOM TEXT UPLOAD (Only shown when category has hasTwoPhotos enabled) */}
+            {hasTwoPhotos && (
+              <div className="space-y-5 mb-8">
+                {/* UPLOAD YOUR 2 PHOTOS CARD */}
+                <div className="bg-zinc-50/80 rounded-2xl p-5 sm:p-6 border border-zinc-200/90 shadow-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Upload className="w-4 h-4 text-zinc-900" />
+                    <h3 className="text-xs sm:text-sm font-extrabold text-zinc-900 uppercase tracking-wider">
+                      UPLOAD YOUR 2 PHOTOS
+                    </h3>
+                  </div>
+                  <p className="text-xs text-zinc-500 mb-5">
+                    This Magic Case needs 2 photos to print — both are required.
+                  </p>
+
+                  {/* PHOTO 1 */}
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider">
+                        PHOTO 1
+                      </label>
+                      {photo1 && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Photo 1 Added
+                        </span>
+                      )}
+                    </div>
+
+                    {photo1 ? (
+                      <div className="relative border border-zinc-200 rounded-2xl p-3 bg-white flex items-center gap-4 shadow-sm">
+                        <img src={photo1} alt="Uploaded Photo 1" className="w-20 h-24 object-cover rounded-xl border border-zinc-200 shadow-sm" />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-zinc-900">Photo 1 selected</p>
+                          <p className="text-[11px] text-zinc-500 mt-0.5">Ready for high-res print</p>
+                          <label className="inline-block mt-2 text-xs font-bold text-zinc-900 underline cursor-pointer hover:text-black">
+                            Change photo
+                            <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, 1)} className="hidden" />
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPhoto1(null)}
+                          className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+                          title="Remove photo"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white hover:bg-zinc-50 shadow-sm">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handlePhotoUpload(e, 1)}
+                          className="hidden"
+                        />
+                        <ImageIcon className="w-6 h-6 text-zinc-400 mb-2" />
+                        <span className="text-xs font-bold text-zinc-800">
+                          {isUploadingPhoto1 ? 'Processing photo 1...' : 'Tap to choose photo 1'}
+                        </span>
+                        <span className="text-[11px] text-zinc-400 mt-1">JPG or PNG, up to 5MB</span>
+                      </label>
+                    )}
+                  </div>
+
+                  {/* PHOTO 2 */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider">
+                        PHOTO 2
+                      </label>
+                      {photo2 && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Photo 2 Added
+                        </span>
+                      )}
+                    </div>
+
+                    {photo2 ? (
+                      <div className="relative border border-zinc-200 rounded-2xl p-3 bg-white flex items-center gap-4 shadow-sm">
+                        <img src={photo2} alt="Uploaded Photo 2" className="w-20 h-24 object-cover rounded-xl border border-zinc-200 shadow-sm" />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-zinc-900">Photo 2 selected</p>
+                          <p className="text-[11px] text-zinc-500 mt-0.5">Ready for high-res print</p>
+                          <label className="inline-block mt-2 text-xs font-bold text-zinc-900 underline cursor-pointer hover:text-black">
+                            Change photo
+                            <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, 2)} className="hidden" />
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPhoto2(null)}
+                          className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+                          title="Remove photo"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white hover:bg-zinc-50 shadow-sm">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handlePhotoUpload(e, 2)}
+                          className="hidden"
+                        />
+                        <ImageIcon className="w-6 h-6 text-zinc-400 mb-2" />
+                        <span className="text-xs font-bold text-zinc-800">
+                          {isUploadingPhoto2 ? 'Processing photo 2...' : 'Tap to choose photo 2'}
+                        </span>
+                        <span className="text-[11px] text-zinc-400 mt-1">JPG or PNG, up to 5MB</span>
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* TEXT 1 & TEXT 2 (OPTIONAL) */}
+                <div className="bg-zinc-50/80 rounded-2xl p-5 sm:p-6 border border-zinc-200/90 shadow-sm space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">
+                      TEXT 1 (optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Priya"
+                      value={text1}
+                      onChange={(e) => setText1(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm text-zinc-800 outline-none focus:border-zinc-900 transition-all shadow-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">
+                      TEXT 2 (optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Kumar"
+                      value={text2}
+                      onChange={(e) => setText2(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm text-zinc-800 outline-none focus:border-zinc-900 transition-all shadow-sm"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 

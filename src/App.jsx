@@ -284,6 +284,7 @@ function App() {
           <Route path="/product" element={
             <Product
               selectedProduct={selectedProduct}
+              selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onAddToCart={(item) => {
                 addToCart(item);
