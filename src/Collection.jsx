@@ -213,7 +213,18 @@ export default function Collection({
             {products.map((prod, idx) => (
               <div
                 key={prod.id}
-                onClick={() => onSelectProduct && onSelectProduct(prod)}
+                onClick={() => {
+                  const enrichedProd = {
+                    ...prod,
+                    categoryId: prod.categoryId || currentCat?.id,
+                    categoryTitle: currentCat?.title || '',
+                    categorySlug: currentCat?.slug || '',
+                    hasTwoPhotos: Boolean(currentCat?.hasTwoPhotos) || Boolean(prod.hasTwoPhotos)
+                  };
+                  if (onSelectProduct) {
+                    onSelectProduct(enrichedProd, currentCat);
+                  }
+                }}
                 className="group flex flex-col cursor-pointer"
               >
                 {/* Product Image Box Matching Screenshot 2 */}

@@ -106,14 +106,25 @@ export async function fetchCategoriesFromApi() {
     const res = await apiFetch('/categories');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rawServerCats = await res.json();
-    const serverCats = Array.isArray(rawServerCats)
-      ? rawServerCats.map(c => ({ ...c, section: normalizeCategorySection(c) }))
-      : [];
+    if (Array.isArray(rawServerCats)) {
+      const localCats = getStoredCategories();
+      const serverCats = rawServerCats.map(sc => {
+        const localMatch = localCats.find(lc => lc.id === sc.id || String(lc.id) === String(sc.id));
+        const hasTwo = (sc.hasTwoPhotos !== null && sc.hasTwoPhotos !== undefined)
+          ? Boolean(sc.hasTwoPhotos === true || sc.hasTwoPhotos === 'true' || sc.hasTwoPhotos === 1 || sc.hasTwoPhotos === '1')
+          : Boolean(localMatch?.hasTwoPhotos === true || localMatch?.hasTwoPhotos === 'true');
+        return {
+          ...sc,
+          section: normalizeCategorySection(sc),
+          hasTwoPhotos: hasTwo
+        };
+      });
 
-    try {
-      localStorage.setItem('custom_categories', JSON.stringify(serverCats));
-    } catch (_) {}
-    return serverCats;
+      try {
+        localStorage.setItem('custom_categories', JSON.stringify(serverCats));
+      } catch (_) {}
+      return serverCats;
+    }
   } catch (e) {
     console.warn('Backend categories API unavailable, using cached categories:', e.message);
   }
@@ -121,39 +132,78 @@ export async function fetchCategoriesFromApi() {
 }
 
 export async function saveStoredCategory(cat) {
-  try {
-    if (!cat.section) cat.section = normalizeCategorySection(cat);
+  if (!cat.section) cat.section = normalizeCategorySection(cat);
+  const normalizedHasTwo = Boolean(
+    cat.hasTwoPhotos === true || 
+    cat.hasTwoPhotos === 'true' || 
+    cat.hasTwoPhotos === 1 || 
+    cat.hasTwoPhotos === '1'
+  );
 
-    // 1. Persist to Backend API (PostgreSQL)
+  const cleanCat = {
+    ...cat,
+    hasTwoPhotos: normalizedHasTwo
+  };
+
+  // 1. Immediately update localStorage cache so UI is instantaneous and resilient
+  try {
+    const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
+    const existingIndex = custom.findIndex(c => c.id === cleanCat.id || String(c.id) === String(cleanCat.id));
+    if (existingIndex >= 0) {
+      custom[existingIndex] = { ...custom[existingIndex], ...cleanCat };
+    } else {
+      custom.unshift(cleanCat);
+    }
+    localStorage.setItem('custom_categories', JSON.stringify(custom));
+  } catch (_) {}
+
+  // 2. Also update all products under this category in localStorage so products instantly inherit hasTwoPhotos
+  try {
+    const customProds = JSON.parse(localStorage.getItem('custom_products') || '[]');
+    let prodsChanged = false;
+    const updatedProds = customProds.map(p => {
+      if (p.categoryId === cleanCat.id || String(p.categoryId) === String(cleanCat.id)) {
+        prodsChanged = true;
+        return { ...p, hasTwoPhotos: normalizedHasTwo };
+      }
+      return p;
+    });
+    if (prodsChanged) {
+      localStorage.setItem('custom_products', JSON.stringify(updatedProds));
+    }
+  } catch (_) {}
+
+  // 3. Persist to Backend API (PostgreSQL) if reachable
+  try {
     const res = await apiFetch('/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cat)
+      body: JSON.stringify(cleanCat)
     });
-    
-    let saved = cat;
     if (res.ok) {
       const data = await res.json();
-      if (data && data.id) saved = data;
-    }
-
-    // 2. Update localStorage cache safely
-    try {
-      const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
-      const existingIndex = custom.findIndex(c => c.id === saved.id);
-      if (existingIndex >= 0) {
-        custom[existingIndex] = saved;
-      } else {
-        custom.unshift(saved);
+      if (data && data.id) {
+        const merged = {
+          ...cleanCat,
+          ...data,
+          hasTwoPhotos: (data.hasTwoPhotos !== null && data.hasTwoPhotos !== undefined)
+            ? Boolean(data.hasTwoPhotos === true || data.hasTwoPhotos === 'true')
+            : normalizedHasTwo
+        };
+        const custom = JSON.parse(localStorage.getItem('custom_categories') || '[]');
+        const idx = custom.findIndex(c => c.id === merged.id || String(c.id) === String(merged.id));
+        if (idx >= 0) {
+          custom[idx] = merged;
+          localStorage.setItem('custom_categories', JSON.stringify(custom));
+        }
+        return merged;
       }
-      localStorage.setItem('custom_categories', JSON.stringify(custom));
-    } catch (_) {}
-
-    return saved;
+    }
   } catch (e) {
-    console.error('Failed to sync category with backend:', e);
-    throw e;
+    console.warn('Backend sync failed, saved locally:', e.message);
   }
+
+  return cleanCat;
 }
 
 export async function deleteStoredCategory(id) {
@@ -202,12 +252,22 @@ export async function fetchProductsFromApi(categoryId = null) {
     const serverProds = await res.json();
 
     if (Array.isArray(serverProds)) {
+      const allCats = getStoredCategories();
+      const enriched = serverProds.map(p => {
+        const cat = allCats.find(c => c.id === p.categoryId || String(c.id) === String(p.categoryId));
+        const hasTwo = Boolean(cat?.hasTwoPhotos) || Boolean(p.hasTwoPhotos);
+        return {
+          ...p,
+          hasTwoPhotos: hasTwo
+        };
+      });
+
       if (!categoryId || categoryId === 'all') {
         try {
-          localStorage.setItem('custom_products', JSON.stringify(serverProds));
+          localStorage.setItem('custom_products', JSON.stringify(enriched));
         } catch (_) {}
       }
-      return serverProds;
+      return enriched;
     }
   } catch (e) {
     console.warn('Backend products API unavailable, using cached products:', e.message);
@@ -216,31 +276,51 @@ export async function fetchProductsFromApi(categoryId = null) {
 }
 
 export async function saveStoredProduct(prod) {
+  const allCats = getStoredCategories();
+  const parentCat = allCats.find(c => c.id === prod.categoryId || String(c.id) === String(prod.categoryId));
+  const hasTwo = prod.hasTwoPhotos !== undefined
+    ? Boolean(prod.hasTwoPhotos)
+    : Boolean(parentCat?.hasTwoPhotos);
+
+  const cleanProd = {
+    ...prod,
+    hasTwoPhotos: hasTwo
+  };
+
+  // 1. Immediately update local cache
+  try {
+    const custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
+    const existingIndex = custom.findIndex(p => p.id === cleanProd.id || String(p.id) === String(cleanProd.id));
+    if (existingIndex >= 0) {
+      custom[existingIndex] = { ...custom[existingIndex], ...cleanProd };
+    } else {
+      custom.unshift(cleanProd);
+    }
+    localStorage.setItem('custom_products', JSON.stringify(custom));
+  } catch (_) {}
+
+  // 2. Persist to backend if available
   try {
     const res = await apiFetch('/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(prod)
+      body: JSON.stringify(cleanProd)
     });
-    if (!res.ok) {
-      throw new Error(`Failed to save product to backend: HTTP ${res.status}`);
-    }
-    const saved = await res.json();
-    try {
-      const custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
-      const existingIndex = custom.findIndex(p => p.id === saved.id);
-      if (existingIndex >= 0) {
-        custom[existingIndex] = saved;
-      } else {
-        custom.unshift(saved);
+    if (res.ok) {
+      const saved = await res.json();
+      if (saved && saved.id) {
+        const merged = { ...cleanProd, ...saved, hasTwoPhotos: hasTwo };
+        const custom = JSON.parse(localStorage.getItem('custom_products') || '[]');
+        const idx = custom.findIndex(p => p.id === merged.id || String(p.id) === String(merged.id));
+        if (idx >= 0) custom[idx] = merged;
+        localStorage.setItem('custom_products', JSON.stringify(custom));
+        return merged;
       }
-      localStorage.setItem('custom_products', JSON.stringify(custom));
-    } catch (_) {}
-    return saved;
+    }
   } catch (e) {
-    console.error('Failed to sync product with backend:', e);
-    throw e;
+    console.warn('Failed to sync product with backend, saved locally:', e.message);
   }
+  return cleanProd;
 }
 
 export async function deleteStoredProduct(id) {

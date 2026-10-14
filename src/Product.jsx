@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Share2, ChevronLeft, Check, ChevronDown, Search, Upload, Image as ImageIcon, X } from 'lucide-react';
 import { PHONE_MODELS_BY_BRAND } from './phoneModelsData';
-import { getStoredCategories, compressImage } from './categoryData';
+import { getStoredCategories, fetchCategoriesFromApi, compressImage } from './categoryData';
 
 const SearchableSelect = ({ optionsByBrand, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -105,21 +105,65 @@ export default function Product({
   const [selectedModel, setSelectedModel] = useState('');
   const [wording, setWording] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(null);
+  const [categoriesList, setCategoriesList] = useState(getStoredCategories);
 
-  // Check if this product's category has the 2 Photos & Custom Text option enabled
-  const allCategories = getStoredCategories();
-  const productCategory = allCategories.find(c => 
-    c.id === selectedProduct?.categoryId || 
-    String(c.id) === String(selectedProduct?.categoryId) ||
-    (selectedProduct?.category && c.title?.toLowerCase() === selectedProduct?.category?.toLowerCase()) ||
-    (selectedProduct?.categorySlug && c.slug === selectedProduct?.categorySlug) ||
-    (selectedCategory && (c.id === selectedCategory.id || String(c.id) === String(selectedCategory.id)))
-  );
-  const hasTwoPhotos = Boolean(
-    productCategory?.hasTwoPhotos || 
-    selectedProduct?.hasTwoPhotos || 
-    selectedCategory?.hasTwoPhotos
-  );
+  useEffect(() => {
+    // 1. Initial cached state
+    setCategoriesList(getStoredCategories());
+    // 2. Fetch live data from backend
+    fetchCategoriesFromApi().then(cats => {
+      if (Array.isArray(cats) && cats.length > 0) {
+        setCategoriesList(cats);
+      }
+    });
+  }, [selectedProduct, selectedCategory]);
+
+  const isEnabled = (val) => val === true || val === 'true' || val === 1 || val === '1';
+
+  // 1. Direct check on product
+  let hasTwoPhotos = isEnabled(selectedProduct?.hasTwoPhotos);
+
+  // 2. Direct check on passed selectedCategory
+  if (!hasTwoPhotos && selectedCategory) {
+    hasTwoPhotos = isEnabled(selectedCategory.hasTwoPhotos);
+  }
+
+  // 3. Search category by all possible identifiers
+  if (!hasTwoPhotos) {
+    const catsToSearch = categoriesList.length > 0 ? categoriesList : getStoredCategories();
+    const matchedCategory = catsToSearch.find(c => {
+      if (!c) return false;
+      // Match by categoryId on product
+      if (selectedProduct?.categoryId && (c.id === selectedProduct.categoryId || String(c.id) === String(selectedProduct.categoryId))) {
+        return true;
+      }
+      // Match by category title / category field
+      const pCat = selectedProduct?.category || selectedProduct?.categoryTitle;
+      if (pCat && c.title && c.title.trim().toLowerCase() === pCat.trim().toLowerCase()) {
+        return true;
+      }
+      // Match by category slug
+      if (selectedProduct?.categorySlug && c.slug && c.slug.toLowerCase() === selectedProduct.categorySlug.toLowerCase()) {
+        return true;
+      }
+      // Match by selectedCategory id or slug
+      if (selectedCategory?.id && (c.id === selectedCategory.id || String(c.id) === String(selectedCategory.id))) {
+        return true;
+      }
+      if (selectedCategory?.slug && c.slug && c.slug.toLowerCase() === selectedCategory.slug.toLowerCase()) {
+        return true;
+      }
+      // Match if product title contains the category title
+      if (c.title && selectedProduct?.title && selectedProduct.title.toLowerCase().includes(c.title.trim().toLowerCase())) {
+        return true;
+      }
+      return false;
+    });
+
+    if (matchedCategory) {
+      hasTwoPhotos = isEnabled(matchedCategory.hasTwoPhotos);
+    }
+  }
 
   // State for 2 Photos & Custom Texts
   const [photo1, setPhoto1] = useState(null);

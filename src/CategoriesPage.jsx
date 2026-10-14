@@ -219,7 +219,18 @@ export default function CategoriesPage({
               {selectedCatProducts.map((prod) => (
                 <div
                   key={prod.id}
-                  onClick={() => onSelectProduct && onSelectProduct(prod)}
+                  onClick={() => {
+                    const enrichedProd = {
+                      ...prod,
+                      categoryId: prod.categoryId || selectedCat?.id,
+                      categoryTitle: selectedCat?.title || '',
+                      categorySlug: selectedCat?.slug || '',
+                      hasTwoPhotos: Boolean(selectedCat?.hasTwoPhotos) || Boolean(prod.hasTwoPhotos)
+                    };
+                    if (onSelectProduct) {
+                      onSelectProduct(enrichedProd, selectedCat);
+                    }
+                  }}
                   className="group flex flex-col bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 hover:border-zinc-400 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                 >
                   {/* Image Container with Top-Left Black SALE Badge */}

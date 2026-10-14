@@ -97,8 +97,17 @@ function App() {
   };
 
   const navigateTo = (page, category = null, product = null) => {
-    setSelectedCategory(category);
-    if (product !== null) setSelectedProduct(product);
+    if (category !== null && category !== undefined) {
+      setSelectedCategory(category);
+    }
+    if (product !== null && product !== undefined) {
+      setSelectedProduct(product);
+      if (!category && product.categoryId) {
+        const allCats = getStoredCategories();
+        const found = allCats.find(c => c.id === product.categoryId || String(c.id) === String(product.categoryId));
+        if (found) setSelectedCategory(found);
+      }
+    }
     if (page === 'home') {
       navigate('/');
     } else if (page === 'categories' && category) {
@@ -218,7 +227,7 @@ function App() {
                 navigate(`/collections/${slug}`);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/reviews" element={<Reviews />} />
@@ -230,7 +239,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/categories/:slug" element={
@@ -238,7 +247,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/category" element={
@@ -246,7 +255,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/category/:slug" element={
@@ -254,7 +263,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/collections/:slug" element={
@@ -262,7 +271,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/collection/:slug" element={
@@ -270,7 +279,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/collection" element={
@@ -278,7 +287,7 @@ function App() {
               selectedCategory={selectedCategory}
               setCurrentPage={setCurrentPageWrapper}
               onSelectCategory={(cat) => setSelectedCategory(cat)}
-              onSelectProduct={(prod) => navigateTo('product', null, prod)}
+              onSelectProduct={(prod, cat) => navigateTo('product', cat || selectedCategory, prod)}
             />
           } />
           <Route path="/product" element={

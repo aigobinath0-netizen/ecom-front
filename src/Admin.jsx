@@ -323,10 +323,14 @@ export default function Admin({ setCurrentPage, onSelectCategory }) {
       return;
     }
 
+    const parentCat = categories.find(c => c.id === newProduct.categoryId || String(c.id) === String(newProduct.categoryId));
     const prodId = 'prod-' + Date.now();
     const productObj = {
       id: prodId,
       categoryId: newProduct.categoryId,
+      categoryTitle: parentCat?.title || '',
+      categorySlug: parentCat?.slug || '',
+      hasTwoPhotos: Boolean(parentCat?.hasTwoPhotos),
       title: newProduct.title.trim(),
       price: Number(newProduct.price) || 499,
       oldPrice: Number(newProduct.oldPrice) || 999,
